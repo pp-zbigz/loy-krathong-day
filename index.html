@@ -1225,7 +1225,7 @@ input#wish:focus { outline: none; border-color: var(--pink); }
     function stopSynth() { clearInterval(timer); timer = null; if (ctx) ctx.suspend(); }
     // YouTube song (played through YouTube's own embedded player)
     const YT_ID = "95s3Y8nVMV4";
-    let yt = null, ytReady = false, ytFailed = false, ytWanted = false;
+    let yt = null, ytReady = false, ytFailed = true, ytWanted = false;
     function loadYT() {
       if (window.YT && window.YT.Player) { makeYT(); return; }
       window.onYouTubeIframeAPIReady = makeYT;
@@ -1245,11 +1245,10 @@ input#wish:focus { outline: none; border-color: var(--pink); }
         }
       });
     }
-    loadYT();
     function startFallback() {
       if (useFile === false) { startSynth(); return; }
       if (!audioEl) {
-        audioEl = new Audio("bgm.mp3"); audioEl.loop = true; audioEl.volume = .6;
+        audioEl = new Audio("bgm.mp3"); audioEl.loop = true; audioEl.volume = .4;
         audioEl.addEventListener("error", () => { useFile = false; if (on) startSynth(); }, { once: true });
       }
       audioEl.play().then(() => { useFile = true; }).catch(() => { useFile = false; if (on) startSynth(); });

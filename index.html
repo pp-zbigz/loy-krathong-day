@@ -287,7 +287,7 @@ input#wish:focus { outline: none; border-color: var(--pink); }
         <input id="wish" maxlength="80" placeholder="อธิษฐานในใจ (เห็นแค่เรา)" autocomplete="off">
         <div class="status" id="status"></div>
         <p class="hint" id="hint"></p>
-        <button id="go" type="button">พร้อมลอย ♡</button>
+        <button id="go" type="button">พร้อมลอย &amp;</button>
         <div class="sub"><span class="label" id="mode"></span><button class="link" id="solo" type="button">ลอยเลยไม่รอ</button></div>
       </div>
     </div>
@@ -916,7 +916,7 @@ input#wish:focus { outline: none; border-color: var(--pink); }
     }
     if (!S.me) return;
     const other = OTHER[S.me];
-    $("hello").textContent = "สวัสดี " + NAMES[S.me] + " ♡";
+    $("hello").textContent = "สวัสดี " + NAMES[S.me] + " &";
     const st = $("status"); st.innerHTML = "";
     for (const name of ["big", "kwan"]) {
       const c = document.createElement("span"); c.className = "chip";
@@ -930,11 +930,11 @@ input#wish:focus { outline: none; border-color: var(--pink); }
     const pOnline = status[other].online, pReady = status[other].ready;
     go.classList.toggle("waiting", S.ready);
     if (S.counting) { hint.textContent = "นับถอยหลัง… ตั้งจิตอธิษฐานเลย"; go.textContent = "กำลังจะลอย ✨"; }
-    else if (!room) { hint.textContent = "หน้านี้ยังเชื่อมต่อกันไม่ได้ ลอยคนเดียวได้ก่อนนะ"; go.textContent = "ลอยเลย ♡"; }
-    else if (!pOnline) { hint.textContent = "รอ" + NAMES[other] + "เปิดลิงก์อยู่นะ ระหว่างนี้เลือกลายกระทงไปก่อน"; go.textContent = "ลอยคนเดียวก่อน ♡"; }
+    else if (!room) { hint.textContent = "หน้านี้ยังเชื่อมต่อกันไม่ได้ ลอยคนเดียวได้ก่อนนะ"; go.textContent = "ลอยเลย &"; }
+    else if (!pOnline) { hint.textContent = "รอ" + NAMES[other] + "เปิดลิงก์อยู่นะ ระหว่างนี้เลือกลายกระทงไปก่อน"; go.textContent = "ลอยคนเดียวก่อน &"; }
     else if (S.ready && !pReady) { hint.textContent = "รอ" + NAMES[other] + "กดพร้อมอยู่…"; go.textContent = "ยกเลิกพร้อม"; }
-    else if (!S.ready && pReady) { hint.textContent = NAMES[other] + "พร้อมแล้ว! กดพร้อมลอยเลย แล้วจะนับ 3-2-1 ลอยพร้อมกัน"; go.textContent = "พร้อมลอย ♡"; }
-    else { hint.textContent = NAMES[other] + "มาแล้ว! กดพร้อมลอยทั้งคู่ แล้วจะนับ 3-2-1 ลอยพร้อมกัน"; go.textContent = "พร้อมลอย ♡"; }
+    else if (!S.ready && pReady) { hint.textContent = NAMES[other] + "พร้อมแล้ว! กดพร้อมลอยเลย แล้วจะนับ 3-2-1 ลอยพร้อมกัน"; go.textContent = "พร้อมลอย &"; }
+    else { hint.textContent = NAMES[other] + "มาแล้ว! กดพร้อมลอยทั้งคู่ แล้วจะนับ 3-2-1 ลอยพร้อมกัน"; go.textContent = "พร้อมลอย &"; }
     solo.hidden = !room || !pOnline || S.counting;
     $("mode").textContent = room ? "ลอยไปแล้ว " + S.floats + " ใบ" : "โหมดคนเดียว";
   }

@@ -1406,7 +1406,7 @@ input#wish:focus { outline: none; border-color: var(--pink); }
 
   // ---------- character pictures: put big.png / kwan.png next to this file ----------
   const CHAR_IMG = { big: "big.png", kwan: "kwan.png" };
-  const CHAR_POS = { big: { x: 51.7, y: 74 }, kwan: { x: 52.7, y: 72.6 } };
+  const CHAR_POS = { big: { x: 52, y: 63, w: 62 }, kwan: { x: 52.7, y: 72.6 } };
   function useImage(who) {
     const img = new Image();
     img.className = "b"; img.alt = NAMES[who];
@@ -1416,6 +1416,7 @@ input#wish:focus { outline: none; border-color: var(--pink); }
       bunnyEl[who].classList.add("custom");
       handEl[who].style.left = CHAR_POS[who].x + "%";
       handEl[who].style.top = CHAR_POS[who].y + "%";
+      if (CHAR_POS[who].w) handEl[who].style.width = CHAR_POS[who].w + "%";
     };
     img.src = CHAR_IMG[who];
   }

@@ -118,7 +118,14 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events
 .spk-glow { animation: lampglow .3s ease-in-out infinite alternate; }
 .lovebeat { animation: love 3s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
 @keyframes love { 0% { transform: translateY(4px) scale(.6); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateY(-14px) scale(1); opacity: 0; } }
+.gen { left: var(--l, auto); right: var(--r, auto); bottom: var(--b); }
+.balloon { animation: bob 3s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 100%; }
+@keyframes bob { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-3px) rotate(3deg); } }
+.phone-flash { animation: flash 5s steps(1) infinite; }
+@keyframes flash { 0%, 92% { opacity: .5; } 93%, 96% { opacity: 1; } }
 @media (max-width: 640px) {
+  .gen { display: none; }
+  .gen.m { display: block; left: var(--ml, auto); right: var(--mr, auto); bottom: var(--mb); }
   .p-kr, .p-lan { display: none; }
   .p-spark { left: 4%; bottom: 40%; }
   .p-couple { right: 2%; bottom: 44%; }
@@ -577,7 +584,64 @@ input#wish:focus { outline: none; border-color: var(--pink); }
         <ellipse cx="13.5" cy="36" rx="2" ry="3" fill="${skin}"/><ellipse cx="38.5" cy="36" rx="2" ry="3" fill="${skin}"/>
         <path d="M18 44 Q26 48 34 44 L33 48 Q26 50 19 48 Z" fill="${skin}"/>
       </svg>`;
-    return `<div class="person p-kr"><div class="p-sway">${woman}</div></div>
+    // generic visitors (seen from behind)
+    function visitor(o) {
+      const hair = o.hair || hairD, kid = !!o.kid;
+      const top = kid ? 40 : 34, headR = kid ? 11 : 12;
+      const legs = o.skirt
+        ? `<path d="M14 ${top + 38} L36 ${top + 38} L40 ${top + 66} L10 ${top + 66} Z" fill="${o.skirt}"/>`
+        : `<rect x="16" y="${top + 40}" width="7" height="${kid ? 22 : 28}" rx="3" fill="${o.pants || "#2f3b55"}"/><rect x="27" y="${top + 40}" width="7" height="${kid ? 22 : 28}" rx="3" fill="${o.pants || "#2f3b55"}"/>`;
+      let hairShape = "";
+      if (o.style === "bun") hairShape = `<circle cx="25" cy="${top - headR - 2}" r="6" fill="${hair}"/>`;
+      if (o.style === "long") hairShape = `<path d="M14 ${top} Q12 ${top + 20} 17 ${top + 24} L33 ${top + 24} Q38 ${top + 20} 36 ${top}" fill="${hair}"/>`;
+      if (o.style === "cap") hairShape = `<path d="M13 ${top - 2} Q25 ${top - 18} 37 ${top - 2} Z" fill="${o.cap || "#e0485a"}"/><rect x="12" y="${top - 3}" width="26" height="3" rx="1.5" fill="${o.cap || "#e0485a"}"/>`;
+      if (o.style === "tie") hairShape = `<path d="M33 ${top - 4} Q42 ${top} 40 ${top + 12}" stroke="${hair}" stroke-width="5" stroke-linecap="round" fill="none"/>`;
+      let arms = `<path d="M15 ${top + 18} Q10 ${top + 28} 12 ${top + 36}" stroke="${skin}" stroke-width="4.5" stroke-linecap="round" fill="none"/>`;
+      let prop = "";
+      if (o.prop === "phone") {
+        arms += `<path d="M35 ${top + 18} Q40 ${top + 8} 36 ${top - 4}" stroke="${skin}" stroke-width="4.5" stroke-linecap="round" fill="none"/>`;
+        prop = `<circle class="phone-flash" cx="36" cy="${top - 9}" r="9" fill="#cfe6ff" opacity=".5"/><rect x="32" y="${top - 14}" width="8" height="11" rx="1.5" fill="#1e2233" stroke="#cfe6ff" stroke-width="1"/>`;
+      } else if (o.prop === "balloon") {
+        arms += `<path d="M35 ${top + 18} Q41 ${top + 12} 40 ${top + 4}" stroke="${skin}" stroke-width="4.5" stroke-linecap="round" fill="none"/>`;
+        prop = `<g class="balloon"><path d="M40 ${top + 4} Q44 ${top - 14} 40 ${top - 30}" stroke="#ddd" stroke-width=".8" fill="none"/><ellipse cx="40" cy="${top - 40}" rx="9" ry="11" fill="${o.balloon || "#ff8fbf"}"/><ellipse cx="37" cy="${top - 44}" rx="2.5" ry="3.5" fill="#fff" opacity=".5"/></g>`;
+      } else if (o.prop === "krathong") {
+        arms += `<path d="M35 ${top + 18} Q42 ${top + 22} 42 ${top + 28}" stroke="${skin}" stroke-width="4.5" stroke-linecap="round" fill="none"/>`;
+        prop = `${glow(43, top + 26, 13, "#ffd68a", .3)}<ellipse cx="43" cy="${top + 31}" rx="8" ry="2.6" fill="#8cc08a"/><path d="M37 ${top + 30} Q43 ${top + 20} 49 ${top + 30} Z" fill="${o.kcolor || "#ffab8f"}"/><ellipse class="flame" cx="43" cy="${top + 19}" rx="1.3" ry="2.2" fill="#ffcf5a"/>`;
+      } else if (o.prop === "food") {
+        arms += `<path d="M35 ${top + 18} Q41 ${top + 22} 40 ${top + 28}" stroke="${skin}" stroke-width="4.5" stroke-linecap="round" fill="none"/>`;
+        prop = `<path d="M37 ${top + 26} L43 ${top + 26} L41 ${top + 34} L39 ${top + 34} Z" fill="#fff"/><circle cx="40" cy="${top + 23}" r="5" fill="${o.food || "#ffc4dc"}"/>`;
+      } else {
+        arms += `<path d="M35 ${top + 18} Q40 ${top + 28} 38 ${top + 36}" stroke="${skin}" stroke-width="4.5" stroke-linecap="round" fill="none"/>`;
+      }
+      const sash = o.sash ? `<path d="M15 ${top + 14} L35 ${top + 14} L35 ${top + 22} L15 ${top + 32} Z" fill="${o.sash}"/>` : "";
+      return `<svg viewBox="0 -20 50 130" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <ellipse cx="25" cy="${top + 68}" rx="15" ry="2.5" fill="rgba(0,0,0,.25)"/>
+        ${legs}
+        <path d="M14 ${top + 14} Q25 ${top + 8} 36 ${top + 14} L37 ${top + 42} L13 ${top + 42} Z" fill="${o.shirt}"/>
+        ${sash}${arms}${prop}
+        ${o.style === "long" ? hairShape : ""}
+        <circle cx="25" cy="${top}" r="${headR}" fill="${hair}"/>
+        ${o.style !== "long" ? hairShape : ""}
+        <ellipse cx="${25 - headR - .5}" cy="${top + 2}" rx="1.8" ry="2.8" fill="${skin}"/><ellipse cx="${25 + headR + .5}" cy="${top + 2}" rx="1.8" ry="2.8" fill="${skin}"/>
+      </svg>`;
+    }
+    const crowd = [
+      { o: { shirt: "#7fb8ff", style: "short", prop: "phone" }, l: "4%", b: "64%", w: 42, ml: "1%", mb: "70%", m: true },
+      { o: { shirt: "#ffd77a", kid: true, pants: "#5b6fb8", prop: "balloon", balloon: "#ff8fbf" }, l: "10%", b: "22%", w: 34 },
+      { o: { shirt: "#b59ad8", skirt: "#6b4f8f", hair: "#bdb6c4", style: "bun", prop: "krathong", kcolor: "#ffb6cf" }, l: "27%", b: "66%", w: 40, ml: "18%", mb: "74%", m: true },
+      { o: { shirt: "#9ff0c8", skirt: "#3f8a6e", style: "long", hair: hairB, prop: "food", food: "#ffc4dc" }, l: "13%", b: "70%", w: 40 },
+      { o: { shirt: "#ffffff", style: "cap", cap: "#4f8fd8", prop: "phone" }, r: "29%", b: "68%", w: 42 },
+      { o: { shirt: "#ff9cbc", kid: true, skirt: "#e0485a", style: "tie", prop: "balloon", balloon: "#9cc9ff" }, r: "10%", b: "24%", w: 34, mr: "1%", mb: "72%", m: true },
+      { o: { shirt: "#ffcf9a", style: "short", hair: hairB, prop: "krathong", kcolor: "#a8cbf5" }, r: "3%", b: "62%", w: 42 },
+      { o: { shirt: "#e8473f", skirt: "#ffd77a", style: "bun", sash: "#ffd77a", prop: "none" }, r: "7%", b: "66%", w: 40 },
+      { o: { shirt: "#5b6fb8", style: "short", prop: "food", food: "#ffe08a" }, l: "21%", b: "14%", w: 44 }
+    ];
+    const crowdHTML = crowd.map((c, i) => {
+      const vars = [`--b:${c.b}`, c.l ? `--l:${c.l}` : "", c.r ? `--r:${c.r}` : "", `--w:clamp(${Math.round(c.w * .75)}px, ${(c.w / 9).toFixed(1)}vw, ${Math.round(c.w * 1.3)}px)`,
+        c.ml ? `--ml:${c.ml}` : "", c.mr ? `--mr:${c.mr}` : "", c.mb ? `--mb:${c.mb}` : "", `z-index:${100 - parseInt(c.b, 10)}`].filter(Boolean).join(";");
+      return `<div class="person gen${c.m ? " m" : ""}" style="${vars}"><div class="p-sway" style="animation-duration:${3 + (i % 4) * .7}s;animation-delay:-${i * .4}s">${visitor(c.o)}</div></div>`;
+    }).join("");
+    return crowdHTML + `<div class="person p-kr"><div class="p-sway">${woman}</div></div>
       <div class="person p-spark"><div class="p-sway" style="animation-duration:3s">${kid}</div></div>
       <div class="person p-couple">${couple}</div>
       <div class="person p-lan"><div class="p-sway" style="animation-duration:5s">${lanternMan}</div></div>`;
@@ -1133,6 +1197,20 @@ input#wish:focus { outline: none; border-color: var(--pink); }
         bgc.beginPath(); bgc.arc(x + b * sw / 4, y + 1, 1.8, 0, 7); bgc.fill();
       }
       bgc.globalAlpha = 1;
+    }
+    // tiny crowd along the far bank
+    const gap = W < 600 ? 7 : 6;
+    for (let x = 4, i = 0; x < W; x += gap + ((i * 7) % 5), i++) {
+      const h = 3 + ((i * 13) % 4) * .6;
+      bgc.fillStyle = "#170f30";
+      bgc.beginPath(); bgc.arc(x, hz - 3 - h * .9, 1.9, 0, 7); bgc.fill();
+      bgc.fillRect(x - 2.2, hz - 3 - h * .6, 4.4, h * .6 + 3);
+      if (i % 9 === 0) {
+        bgc.globalAlpha = .5 + .5 * Math.abs(Math.sin(t / 700 + i));
+        bgc.fillStyle = i % 18 === 0 ? "#cfe6ff" : "#ffcf7a";
+        bgc.beginPath(); bgc.arc(x + 2, hz - 6 - h, 1.2, 0, 7); bgc.fill();
+        bgc.globalAlpha = 1;
+      }
     }
   }
 

@@ -1293,6 +1293,14 @@ input#wish:focus { outline: none; border-color: var(--pink); }
     return { autoStart() { if (!on && !userOff) start(); } };
   })();
   ["go", "solo", "pick-big", "pick-kwan"].forEach((id) => $(id).addEventListener("click", () => music.autoStart()));
+  const firstTouch = (e) => {
+    if (e.target && e.target.closest && e.target.closest("#musicbtn, #ytbox")) return;
+    document.removeEventListener("pointerdown", firstTouch, true);
+    document.removeEventListener("keydown", firstTouch, true);
+    music.autoStart();
+  };
+  document.addEventListener("pointerdown", firstTouch, true);
+  document.addEventListener("keydown", firstTouch, true);
 
   // ---------- realtime sync over a public MQTT broker (no login) ----------
   const ROOM_TOPIC = "loykrathong-bk/" + "r7q3m9x2v5";

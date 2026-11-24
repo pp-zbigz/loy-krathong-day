@@ -1563,7 +1563,7 @@ input#wish:focus { outline: none; border-color: var(--pink); }
       const now = Date.now();
       const list = [];
       for (const [id, v] of others) {
-        if (now - v.seenAt > STALE_MS && now - (v.presence.t || 0) > STALE_MS) continue;
+        if (now - (v.presence.t || v.seenAt) > STALE_MS) continue;
         list.push(Object.freeze({ peer: id, kind: "viewer", sameTab: false, isMe: false, presence: Object.freeze(v.presence), updatedAt: v.updatedAt }));
       }
       frozen = Object.freeze(list);
@@ -1596,7 +1596,7 @@ input#wish:focus { outline: none; border-color: var(--pink); }
         if (!data || typeof data !== "object") return;
         const prev = others.get(id);
         if (Date.now() - (data.t || 0) > STALE_MS && !prev) return;
-        others.set(id, { presence: data, updatedAt: Date.now(), seenAt: Date.now() });
+        others.set(id, { presence: data, updatedAt: Number.isFinite(data.t) ? Math.min(data.t, Date.now()) : Date.now(), seenAt: Date.now() });
         rebuild();
       });
     }

@@ -1,0 +1,870 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ลอยกระทง บิ๊ก ♡ ขวัญ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Itim&family=Mali:wght@400;600&display=swap">
+<style>
+/* Layout: full-screen night river scene; small floating control card on top; two bunnies on the near bank */
+:root {
+  --sky-top: #1b1440;
+  --sky-mid: #3a2a6e;
+  --sky-low: #8a5a9e;
+  --water-top: #2c2a62;
+  --water-low: #120f2e;
+  --bank: #1f3b34;
+  --bank-hi: #2f5a48;
+  --card: rgba(255, 246, 251, 0.94);
+  --ink: #4a2f45;
+  --ink-soft: #8a6a83;
+  --pink: #ff7fb0;
+  --pink-soft: #ffd3e4;
+  --blue: #7fb8ff;
+  --gold: #ffd77a;
+  --font-display: "Itim", "Mali", system-ui, sans-serif;
+  --font-body: "Mali", "Itim", system-ui, sans-serif;
+  color-scheme: dark;
+}
+html, body { height: 100%; margin: 0; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+[hidden] { display: none !important; }
+body {
+  background: var(--sky-top);
+  color: var(--ink);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+#scene { position: relative; width: 100%; height: 100vh; height: 100dvh; min-height: 620px; overflow: hidden; }
+#sky {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 30%, var(--sky-low) 46%, var(--water-top) 46.2%, var(--water-low) 100%);
+}
+#moon {
+  position: absolute; left: 78%; top: 15%; width: clamp(56px, 9vw, 96px); aspect-ratio: 1; max-width: 100%;
+  border-radius: 50%; transform: translate(-50%, -50%);
+  background: radial-gradient(circle at 40% 38%, #fffdf0 0%, #fff4c8 55%, #f7dfa0 100%);
+  box-shadow: 0 0 40px 12px rgba(255, 240, 190, .45), 0 0 120px 40px rgba(255, 220, 240, .18);
+}
+canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+#lanterns, #floats { position: absolute; inset: 0; pointer-events: none; }
+.lantern {
+  position: absolute; bottom: 30%; width: 18px; height: 24px; border-radius: 6px 6px 9px 9px;
+  background: radial-gradient(circle at 50% 75%, #fff3b8 0%, #ffb35c 45%, #e8743f 100%);
+  box-shadow: 0 0 18px 6px rgba(255, 180, 90, .55);
+  animation: rise var(--dur, 16s) ease-in forwards;
+}
+@keyframes rise {
+  0% { transform: translate(0, 0) scale(1); opacity: 0; }
+  8% { opacity: 1; }
+  50% { transform: translate(var(--sway, 20px), -38vh) scale(.75); }
+  100% { transform: translate(calc(var(--sway, 20px) * -1), -80vh) scale(.35); opacity: 0; }
+}
+.floater { position: absolute; left: 0; top: 0; width: var(--kw); will-change: transform; }
+.floater .glow {
+  position: absolute; left: 50%; top: 70%; width: 170%; height: 60%; transform: translate(-50%, -50%);
+  background: radial-gradient(ellipse at center, rgba(255, 214, 130, .45), rgba(255, 180, 120, 0) 70%);
+  border-radius: 50%;
+}
+.floater svg { position: relative; display: block; width: 100%; height: auto; }
+.wish {
+  position: absolute; left: 50%; bottom: 105%; transform: translateX(-50%);
+  background: rgba(255, 246, 251, .92); color: var(--ink); font-size: 14px; line-height: 1.35;
+  padding: 6px 10px; border-radius: 14px; width: max-content; max-width: 200px; text-align: center;
+  animation: wishFade 9s ease forwards; white-space: normal; overflow-wrap: anywhere;
+}
+@keyframes wishFade { 0%, 70% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -20px); } }
+
+#bank {
+  position: absolute; left: 0; right: 0; bottom: 0; height: clamp(150px, 26vh, 230px);
+  background: radial-gradient(120% 70% at 50% 0%, var(--bank-hi) 0%, var(--bank) 60%);
+  border-radius: 50% 50% 0 0 / 22% 22% 0 0;
+}
+#bunnies {
+  position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%);
+  display: flex; gap: clamp(18px, 8vw, 70px); align-items: flex-end;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.bunny { position: relative; width: clamp(96px, 24vw, 150px); text-align: center; }
+.bunny .body { animation: idle 3.2s ease-in-out infinite; transform-origin: 50% 100%; }
+.bunny.ready .body { animation: hop .7s ease-in-out infinite; }
+.bunny svg.b { display: block; width: 100%; height: auto; }
+.bunny img.b { display: block; width: 100%; height: clamp(120px, 30vw, 190px); object-fit: contain; object-position: 50% 100%; }
+.bunny.custom .hand { top: 68%; width: 70%; }
+.bunny.custom.editable .hand { cursor: grab; touch-action: none; outline: 2px dashed rgba(255, 255, 255, .55); outline-offset: 2px; border-radius: 12px; z-index: 3; }
+.bunny.custom.editable .hand.dragging { cursor: grabbing; transition: none; }
+.swap { position: absolute; top: 0; right: -6px; border: 0; border-radius: 999px; background: rgba(255, 246, 251, .92); color: var(--ink); font: inherit; font-size: 12px; padding: 3px 8px; cursor: pointer; z-index: 2; }
+.swap:focus-visible { outline: 2px solid var(--pink); }
+#temple { position: absolute; left: 50%; bottom: 54%; width: min(620px, 92%); transform: translateX(-50%); pointer-events: none; }
+#temple svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 0 14px rgba(255, 196, 110, .45)); }
+#temple-ref { position: absolute; left: 50%; top: 46.2%; width: min(620px, 92%); transform: translateX(-50%) scaleY(-.55); transform-origin: 50% 0; opacity: .32; filter: blur(2px); pointer-events: none; -webkit-mask-image: linear-gradient(to top, #000, transparent 85%); mask-image: linear-gradient(to top, #000, transparent 85%); }
+#temple-ref svg { display: block; width: 100%; height: auto; }
+.tl { animation: tw 2.4s ease-in-out infinite alternate; }
+@keyframes tw { from { opacity: .35; } to { opacity: 1; } }
+#fwbtn { position: absolute; right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(clamp(150px, 26vh, 230px) + 12px); border: 0; border-radius: 999px; padding: 10px 16px; font-family: var(--font-display); font-size: 17px; color: #4a2f45; background: linear-gradient(180deg, #fff3b8, var(--gold)); box-shadow: 0 0 18px rgba(255, 215, 122, .6); cursor: pointer; z-index: 3; }
+#fwbtn:active { transform: translateY(2px); }
+#fwbtn:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.bunny .hand {
+  position: absolute; left: 50%; top: 62%; width: 82%; transform: translate(-50%, -50%);
+  transition: opacity .3s, transform .3s;
+}
+.bunny .hand.gone { opacity: 0; transform: translate(-50%, -80%) scale(.6); }
+.bunny .hand svg { display: block; width: 100%; height: auto; }
+.tag {
+  margin-top: 4px; display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-display); font-size: 17px; color: #fff4fa;
+  background: rgba(0, 0, 0, .25); padding: 2px 12px; border-radius: 999px;
+}
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #8a8aa0; }
+.dot.on { background: #7be3a5; box-shadow: 0 0 6px #7be3a5; }
+.dot.ready { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
+@keyframes idle { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg) translateY(-2px); } }
+@keyframes hop { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-10px) scaleY(1.03); } }
+.flame { transform-origin: 50% 100%; animation: flick .5s ease-in-out infinite alternate; }
+@keyframes flick { from { transform: scale(1, 1); } to { transform: scale(.85, 1.15); } }
+
+#panel {
+  position: absolute; top: max(12px, env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%);
+  width: calc(100% - 32px); max-width: 380px; box-sizing: border-box;
+  background: var(--card); border-radius: 22px; padding: 14px 16px 16px;
+  box-shadow: 0 10px 40px rgba(20, 10, 50, .45);
+  display: flex; flex-direction: column; gap: 10px;
+}
+#panel.min .collapsible { display: none; }
+.head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+h1 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 24px; color: var(--pink); text-wrap: balance; line-height: 1.1; }
+h1 small { display: block; font-size: 14px; color: var(--ink-soft); font-family: var(--font-body); margin-top: 2px; }
+.link { background: none; border: 0; color: var(--ink-soft); font: inherit; font-size: 13px; cursor: pointer; text-decoration: underline; padding: 4px; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; }
+.label { font-size: 13px; color: var(--ink-soft); }
+.who { flex: 1; min-width: 120px; padding: 12px; border-radius: 16px; border: 2px solid var(--pink-soft); background: #fff; font-family: var(--font-display); font-size: 20px; color: var(--ink); cursor: pointer; }
+.who:hover, .who:focus-visible { border-color: var(--pink); outline: none; }
+.designs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.design { border: 2px solid transparent; background: #fff; border-radius: 14px; padding: 4px 2px 6px; cursor: pointer; font: inherit; font-size: 12px; color: var(--ink); }
+.design[aria-pressed="true"] { border-color: var(--pink); background: #fff0f6; }
+.design:focus-visible { outline: 2px solid var(--pink); outline-offset: 2px; }
+.design svg { display: block; width: 70%; margin: 0 auto; height: auto; }
+input#wish { width: 100%; box-sizing: border-box; border: 2px solid var(--pink-soft); border-radius: 14px; padding: 9px 12px; font: inherit; font-size: 15px; color: var(--ink); background: #fff; color-scheme: light; }
+input#wish:focus { outline: none; border-color: var(--pink); }
+.status { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; padding: 3px 10px; border-radius: 999px; background: #f6e9f1; color: var(--ink); }
+.hint { font-size: 14px; color: var(--ink); line-height: 1.45; margin: 0; }
+#go {
+  width: 100%; padding: 13px; border: 0; border-radius: 18px; cursor: pointer;
+  font-family: var(--font-display); font-size: 21px; color: #fff;
+  background: linear-gradient(180deg, #ff9cc4, var(--pink)); box-shadow: 0 4px 0 #e05f95;
+}
+#go:active { transform: translateY(2px); box-shadow: 0 2px 0 #e05f95; }
+#go.waiting { background: linear-gradient(180deg, #c9b6ff, #9f86f0); box-shadow: 0 4px 0 #7c63d0; }
+#go:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.sub { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+#countdown {
+  position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none;
+  font-family: var(--font-display); font-size: clamp(90px, 28vw, 200px); color: #fff;
+  text-shadow: 0 0 30px var(--pink), 0 0 60px rgba(255, 127, 176, .6);
+}
+#countdown span { animation: pop .9s ease-out forwards; }
+@keyframes pop { 0% { transform: scale(.3); opacity: 0; } 30% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
+#banner {
+  position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); pointer-events: none;
+  font-family: var(--font-display); font-size: clamp(28px, 7vw, 54px); color: #fff; text-align: center;
+  text-shadow: 0 0 20px var(--pink), 0 2px 0 rgba(0, 0, 0, .2); width: 90%;
+  opacity: 0;
+}
+#banner.show { animation: banner 5s ease forwards; }
+@keyframes banner { 0% { opacity: 0; transform: translate(-50%, -30%) scale(.9); } 15%, 75% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -70%); } }
+@media (prefers-reduced-motion: reduce) {
+  .bunny .body, .flame, .bunny.ready .body { animation: none; }
+}
+</style>
+</head>
+<body>
+<div id="scene">
+  <div id="sky"></div>
+  <div id="moon"></div>
+  <canvas id="bg"></canvas>
+  <div id="temple"></div>
+  <div id="temple-ref"></div>
+  <div id="lanterns"></div>
+  <div id="floats"></div>
+  <div id="bank">
+    <div id="bunnies">
+      <div class="bunny" id="b-big"><div class="body"></div><div class="tag"><span class="dot"></span>บิ๊ก</div></div>
+      <div class="bunny" id="b-kwan"><div class="body"></div><div class="tag"><span class="dot"></span>ขวัญ</div></div>
+    </div>
+  </div>
+  <canvas id="fx"></canvas>
+  <button id="fwbtn" type="button">จุดพลุ</button>
+  <div id="banner"></div>
+  <div id="countdown"></div>
+
+  <section id="panel" aria-label="ควบคุมการลอยกระทง">
+    <div class="head">
+      <h1>ลอยกระทงด้วยกัน<small>บิ๊ก ♡ ขวัญ · คืนวันเพ็ญเดือนสิบสอง</small></h1>
+      <button class="link" id="toggle" type="button">ซ่อน</button>
+    </div>
+    <div class="collapsible" id="pick" hidden>
+      <p class="hint" style="margin-bottom:8px">เราคือใครเอ่ย?</p>
+      <div class="row">
+        <button class="who" id="pick-big" type="button">บิ๊ก</button>
+        <button class="who" id="pick-kwan" type="button">ขวัญ</button>
+      </div>
+    </div>
+    <div class="collapsible" id="main" hidden>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="sub"><span class="label" id="hello"></span><button class="link" id="switch" type="button">ไม่ใช่เรา?</button></div>
+        <div>
+          <div class="label" style="margin-bottom:4px">เลือกลายกระทง</div>
+          <div class="designs" id="designs"></div>
+        </div>
+        <input id="wish" maxlength="80" placeholder="อธิษฐานในใจ (เห็นแค่เรา)" autocomplete="off">
+        <div class="status" id="status"></div>
+        <p class="hint" id="hint"></p>
+        <button id="go" type="button">พร้อมลอย ♡</button>
+        <div class="sub"><span class="label" id="mode"></span><button class="link" id="solo" type="button">ลอยเลยไม่รอ</button></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"></script>
+<script>
+(() => {
+  const NAMES = { big: "บิ๊ก", kwan: "ขวัญ" };
+  const OTHER = { big: "kwan", kwan: "big" };
+  const DESIGNS = {
+    sakura: { label: "ซากุระชมพู", leaf: "#7fb069", leaf2: "#5d8f4c", p1: "#ffc4dc", p2: "#ff8fbf", fl: "#fff0f6", dot: "#ff5d9e" },
+    star:   { label: "ดาวฟ้าใส",  leaf: "#6fae95", leaf2: "#4f8a73", p1: "#cfe3ff", p2: "#8fb8ff", fl: "#fff6c2", dot: "#ffd54d" },
+    sun:    { label: "ทานตะวัน",  leaf: "#8bbd62", leaf2: "#6a9a48", p1: "#ffe9a8", p2: "#ffc94d", fl: "#ffb0c4", dot: "#ff7f7f" }
+  };
+  const BUNNY = { big: { bow: "#6fb0ff", dress: "#b4d9ff" }, kwan: { bow: "#ff7fb0", dress: "#ffc8dd" } };
+
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  };
+
+  const S = {
+    me: ["big", "kwan"].includes(store.get("lk.me")) ? store.get("lk.me") : null,
+    design: DESIGNS[store.get("lk.design")] ? store.get("lk.design") : "sakura",
+    ready: false,
+    floats: parseInt(store.get("lk.floats") || "0", 10) || 0,
+    fw: 0,
+    counting: false
+  };
+  let room = null;
+  const seen = {};
+
+  // ---------- SVG builders ----------
+  function krathongSVG(key) {
+    const d = DESIGNS[key] || DESIGNS.sakura;
+    let leaves = "", petals = "", petals2 = "";
+    for (let i = 0; i < 9; i++) {
+      const x = 10 + i * 12.5;
+      leaves += `<path d="M${x - 7} 74 L${x} ${58 - (i % 2) * 3} L${x + 7} 74 Z" fill="${i % 2 ? d.leaf : d.leaf2}"/>`;
+    }
+    for (let i = 0; i < 7; i++) {
+      const x = 21 + i * 13;
+      petals += `<path d="M${x - 8} 64 Q${x} ${36} ${x + 8} 64 Z" fill="${d.p1}" stroke="${d.p2}" stroke-width="1.2"/>`;
+    }
+    for (let i = 0; i < 5; i++) {
+      const x = 34 + i * 13;
+      petals2 += `<path d="M${x - 7} 60 Q${x} ${38} ${x + 7} 60 Z" fill="${d.p2}"/>`;
+      petals2 += `<circle cx="${x}" cy="52" r="1.6" fill="${d.dot}"/>`;
+    }
+    let flowers = "";
+    [[44, 58], [76, 58], [60, 62]].forEach(([x, y]) => {
+      for (let k = 0; k < 5; k++) {
+        const a = (k / 5) * Math.PI * 2;
+        flowers += `<circle cx="${(x + Math.cos(a) * 3.4).toFixed(1)}" cy="${(y + Math.sin(a) * 3.4).toFixed(1)}" r="2.6" fill="${d.fl}"/>`;
+      }
+      flowers += `<circle cx="${x}" cy="${y}" r="2" fill="${d.dot}"/>`;
+    });
+    return `<svg viewBox="0 0 120 92" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <ellipse cx="60" cy="80" rx="54" ry="10" fill="#4f6e3a"/>
+      <ellipse cx="60" cy="76" rx="54" ry="9" fill="#9cc47a"/>
+      <ellipse cx="60" cy="76" rx="46" ry="6" fill="#c9e3a6"/>
+      ${leaves}${petals}${petals2}
+      <line x1="50" y1="56" x2="47" y2="24" stroke="#8a5a3c" stroke-width="1.4"/>
+      <line x1="54" y1="56" x2="53" y2="22" stroke="#8a5a3c" stroke-width="1.4"/>
+      <circle cx="47" cy="24" r="1.6" fill="#ff6a3d"/><circle cx="53" cy="22" r="1.6" fill="#ff6a3d"/>
+      <rect x="62" y="36" width="7" height="22" rx="2" fill="#fff6e0" stroke="#f0d8a8"/>
+      <g class="flame"><path d="M65.5 22 Q70 30 65.5 36 Q61 30 65.5 22 Z" fill="#ffcf5a"/><path d="M65.5 27 Q67.5 31 65.5 35 Q63.5 31 65.5 27 Z" fill="#fff4c4"/></g>
+      ${flowers}
+    </svg>`;
+  }
+
+  function bunnySVG(who) {
+    const c = BUNNY[who];
+    const line = "#c9a3b3";
+    // jasmine + coloured blossoms around the crown
+    let crown = "";
+    for (let i = 0; i < 9; i++) {
+      const a = Math.PI * (1.12 + i * 0.095);
+      const x = 70 + Math.cos(a) * 44, y = 100 + Math.sin(a) * 34;
+      const col = i % 3 === 1 ? c.bow : "#fffdf6";
+      crown += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5.4" fill="${col}" stroke="${line}" stroke-width="1"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="1.8" fill="#ffd77a"/>`;
+    }
+    const sash = who === "kwan"
+      ? `<path d="M40 138 L100 138 L104 152 L44 176 Z" fill="${c.bow}"/><path d="M44 176 L104 152" stroke="#ffd77a" stroke-width="3"/><path d="M40 138 L100 138" stroke="#ffd77a" stroke-width="3"/>
+         <path d="M46 170 Q70 178 96 162 L110 190 Q70 200 30 190 Z" fill="${c.dress}"/>
+         <g fill="#ffd77a">${[44, 58, 72, 86, 100].map(x => `<path d="M${x} 186 l4 -5 l4 5 l-4 5 Z"/>`).join("")}</g>`
+      : `<path d="M36 138 Q70 128 104 138 L108 168 Q70 176 32 168 Z" fill="${c.dress}"/>
+         <path d="M70 134 L70 170" stroke="#ffd77a" stroke-width="2"/>
+         <circle cx="70" cy="144" r="2.4" fill="#ffd77a"/><circle cx="70" cy="154" r="2.4" fill="#ffd77a"/><circle cx="70" cy="164" r="2.4" fill="#ffd77a"/>
+         <path d="M34 166 Q70 174 106 166 L110 192 Q70 200 30 192 Z" fill="#5b6fb8"/>
+         <path d="M34 172 Q70 180 106 172" stroke="#ffd77a" stroke-width="2.4" fill="none"/>`;
+    return `<svg class="b" viewBox="0 0 140 206" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <g stroke="${line}" stroke-width="2.2">
+        <path d="M40 74 C26 40 30 8 42 6 C54 4 58 40 56 72 Z" fill="#fff"/>
+        <path d="M84 72 C84 40 92 6 104 10 C114 14 108 40 102 58 C108 60 112 66 108 70 Z" fill="#fff"/>
+      </g>
+      <path d="M43 68 C36 44 38 18 43 14 C49 12 51 44 50 68 Z" fill="#ffc9dc"/>
+      <path d="M90 66 C92 42 96 18 102 17 C106 20 102 42 98 62 Z" fill="#ffc9dc"/>
+      <ellipse cx="70" cy="203" rx="40" ry="3" fill="rgba(0,0,0,.18)"/>
+      <ellipse cx="54" cy="197" rx="13" ry="7" fill="#fff" stroke="${line}" stroke-width="2"/>
+      <ellipse cx="86" cy="197" rx="13" ry="7" fill="#fff" stroke="${line}" stroke-width="2"/>
+      ${sash}
+      <ellipse cx="70" cy="102" rx="48" ry="39" fill="#fff" stroke="${line}" stroke-width="2.2"/>
+      ${crown}
+      <ellipse cx="53" cy="104" rx="5.6" ry="7" fill="#3d2a38"/><ellipse cx="87" cy="104" rx="5.6" ry="7" fill="#3d2a38"/>
+      <circle cx="55" cy="101" r="2.2" fill="#fff"/><circle cx="89" cy="101" r="2.2" fill="#fff"/>
+      <circle cx="51.5" cy="107" r="1" fill="#fff"/><circle cx="85.5" cy="107" r="1" fill="#fff"/>
+      <ellipse cx="41" cy="117" rx="8.5" ry="5" fill="#ffadc6" opacity=".8"/><ellipse cx="99" cy="117" rx="8.5" ry="5" fill="#ffadc6" opacity=".8"/>
+      <path d="M67 112 L73 112 L70 115.5 Z" fill="#ff8fb0"/>
+      <path d="M64.5 117 Q67.5 121 70 117.5 Q72.5 121 75.5 117" fill="none" stroke="#3d2a38" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>`;
+  }
+
+  function templeSVG(lit) {
+    const gold = lit ? "url(#tg)" : "#e9b866";
+    const dark = "#3a2556";
+    const lights = (pts) => lit ? pts.map(([x, y], i) => `<circle class="tl" style="animation-delay:${(i * .37) % 2.4}s" cx="${x}" cy="${y}" r="1.8" fill="#fff4c4"/>`).join("") : "";
+    function prang(cx, s) {
+      const k = (v) => (v * s).toFixed(1);
+      let bands = "";
+      for (let i = 0; i < 6; i++) {
+        const y = 172 - i * 20, half = 32 - i * 5;
+        bands += `<path d="M${cx - k(half)} ${220 - k(220 - y)} L${cx + +k(half)} ${220 - k(220 - y)}" stroke="${dark}" stroke-opacity=".45" stroke-width="${k(2)}"/>`;
+      }
+      return `<g>
+        <rect x="${cx - k(70)}" y="${220 - k(20)}" width="${k(140)}" height="${k(20)}" fill="${gold}"/>
+        <rect x="${cx - k(55)}" y="${220 - k(35)}" width="${k(110)}" height="${k(15)}" fill="${gold}"/>
+        <rect x="${cx - k(42)}" y="${220 - k(48)}" width="${k(84)}" height="${k(13)}" fill="${gold}"/>
+        <path d="M${cx - k(34)} ${220 - k(48)} C${cx - k(32)} ${220 - k(110)} ${cx - k(16)} ${220 - k(160)} ${cx} ${220 - k(200)} C${cx + +k(16)} ${220 - k(160)} ${cx + +k(32)} ${220 - k(110)} ${cx + +k(34)} ${220 - k(48)} Z" fill="${gold}"/>
+        ${bands}
+        <path d="M${cx} ${220 - k(200)} L${cx} ${220 - k(222)}" stroke="${gold}" stroke-width="${k(3)}"/>
+        <circle cx="${cx}" cy="${220 - k(224)}" r="${k(3)}" fill="#fff4c4"/>
+        <rect x="${cx - k(9)}" y="${220 - k(42)}" width="${k(18)}" height="${k(22)}" rx="${k(9)}" fill="#fff0b0" opacity=".9"/>
+      </g>`;
+    }
+    function hall(x, flip) {
+      const t = flip ? `translate(${x} 0) scale(-1 1)` : `translate(${x} 0)`;
+      return `<g transform="${t}">
+        <rect x="0" y="178" width="110" height="42" fill="${gold}"/>
+        <rect x="14" y="188" width="10" height="20" rx="5" fill="#fff0b0"/><rect x="34" y="188" width="10" height="20" rx="5" fill="#fff0b0"/>
+        <rect x="66" y="188" width="10" height="20" rx="5" fill="#fff0b0"/><rect x="86" y="188" width="10" height="20" rx="5" fill="#fff0b0"/>
+        <path d="M-10 180 L55 128 L120 180 Z" fill="#b8434f"/>
+        <path d="M-10 180 L55 128 L120 180" fill="none" stroke="${gold}" stroke-width="3"/>
+        <path d="M10 156 L55 110 L100 156 Z" fill="#c9525e"/>
+        <path d="M10 156 L55 110 L100 156" fill="none" stroke="${gold}" stroke-width="3"/>
+        <path d="M55 110 q2 -10 8 -12" stroke="${gold}" stroke-width="3" fill="none"/>
+        <path d="M-10 180 q-6 -4 -4 -12" stroke="${gold}" stroke-width="3" fill="none"/>
+        <path d="M120 180 q6 -4 4 -12" stroke="${gold}" stroke-width="3" fill="none"/>
+        <path d="M35 168 L55 146 L75 168 Z" fill="${gold}" opacity=".8"/>
+      </g>`;
+    }
+    return `<svg viewBox="0 0 600 230" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff0b8"/><stop offset=".5" stop-color="#ffcf6e"/><stop offset="1" stop-color="#d48a3a"/></linearGradient></defs>
+      ${hall(18, false)}
+      ${hall(582, true)}
+      ${prang(185, .62)}
+      ${prang(415, .62)}
+      ${prang(300, 1)}
+      <rect x="0" y="218" width="600" height="12" fill="${gold}"/>
+      ${lights([[300, 40], [276, 120], [324, 120], [268, 170], [332, 170], [185, 120], [415, 120], [60, 175], [540, 175], [150, 210], [450, 210], [240, 214], [360, 214]])}
+    </svg>`;
+  }
+
+  // ---------- DOM ----------
+  const $ = (id) => document.getElementById(id);
+  const bunnyEl = { big: $("b-big"), kwan: $("b-kwan") };
+  const handEl = {}, artEl = {};
+  const CHAR = { big: null, kwan: null };
+  for (const who of ["big", "kwan"]) {
+    const body = bunnyEl[who].querySelector(".body");
+    const art = document.createElement("div");
+    art.innerHTML = bunnySVG(who);
+    body.appendChild(art);
+    artEl[who] = art;
+    const hand = document.createElement("div");
+    hand.className = "hand";
+    body.appendChild(hand);
+    handEl[who] = hand;
+  }
+  $("temple").innerHTML = templeSVG(true);
+  $("temple-ref").innerHTML = templeSVG(false);
+  const handDesign = { big: "star", kwan: "sakura" };
+  function setHand(who, design) {
+    if (handDesign[who] === design && handEl[who].innerHTML) return;
+    handDesign[who] = design;
+    handEl[who].innerHTML = krathongSVG(design);
+  }
+  setHand("big", "star"); handEl.big.innerHTML = krathongSVG("star");
+  setHand("kwan", "sakura"); handEl.kwan.innerHTML = krathongSVG("sakura");
+
+  const designsEl = $("designs");
+  for (const key of Object.keys(DESIGNS)) {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "design"; b.id = "design-" + key; b.dataset.key = key;
+    b.innerHTML = krathongSVG(key);
+    const t = document.createElement("div"); t.textContent = DESIGNS[key].label; b.appendChild(t);
+    b.addEventListener("click", () => { S.design = key; store.set("lk.design", key); push(); render(); });
+    designsEl.appendChild(b);
+  }
+
+  $("pick-big").onclick = () => choose("big");
+  $("pick-kwan").onclick = () => choose("kwan");
+  $("switch").onclick = () => { S.me = null; S.ready = false; push(); render(); };
+  $("toggle").onclick = () => {
+    const p = $("panel"); p.classList.toggle("min");
+    $("toggle").textContent = p.classList.contains("min") ? "เปิด" : "ซ่อน";
+  };
+  $("go").onclick = () => {
+    if (!S.me || S.counting) return;
+    const partner = partnerPeer();
+    if (!room || !partner) { soloLaunch(); return; }
+    S.ready = !S.ready; push(); render(); checkSync();
+  };
+  $("solo").onclick = () => { if (S.me && !S.counting) soloLaunch(); };
+
+  function choose(who) { S.me = who; store.set("lk.me", who); push(); render(); }
+
+  // ---------- room ----------
+  function push() {
+    if (!room) return;
+    room.presence({ name: S.me, design: S.design, ready: S.ready, floats: S.floats, fw: S.fw }).catch(() => {});
+  }
+  function peersOf(name) {
+    if (!room) return [];
+    return room.peers().filter(p => p.kind === "viewer" && !p.sameTab && p.presence && p.presence.name === name);
+  }
+  function partnerPeer() {
+    if (!S.me) {
+      return null;
+    }
+    const list = peersOf(OTHER[S.me]);
+    if (!list.length) return null;
+    return list.reduce((a, b) => (b.updatedAt > a.updatedAt ? b : a));
+  }
+  function peerFor(name) {
+    const list = peersOf(name);
+    return list.length ? list.reduce((a, b) => (b.updatedAt > a.updatedAt ? b : a)) : null;
+  }
+  function safeDesign(v) { return typeof v === "string" && DESIGNS[v] ? v : null; }
+  function safeInt(v) { return Number.isFinite(v) ? Math.max(0, Math.floor(v)) : 0; }
+
+  let partnerFloatsAtStart = 0;
+  const seenFw = new Map();
+  function onRoomChange() {
+    if (room) {
+      for (const p of room.peers()) {
+        if (p.sameTab || !p.presence) continue;
+        const f = safeInt(p.presence.fw);
+        const prev = seenFw.get(p.peer);
+        seenFw.set(p.peer, f);
+        if (prev !== undefined && f > prev) fireworkShow(4);
+      }
+    }
+    for (const name of ["big", "kwan"]) {
+      if (name === S.me) continue;
+      const p = peerFor(name);
+      if (!p) continue;
+      const f = safeInt(p.presence.floats);
+      const des = safeDesign(p.presence.design) || handDesign[name];
+      if (seen[name] === undefined || f < seen[name]) { seen[name] = f; continue; }
+      if (f > seen[name]) {
+        const n = Math.min(3, f - seen[name]);
+        seen[name] = f;
+        if (!S.counting) for (let i = 0; i < n; i++) setTimeout(() => launch(name, des, ""), i * 700);
+      }
+    }
+    render();
+    checkSync();
+  }
+  function checkSync() {
+    const partner = partnerPeer();
+    if (S.ready && partner && partner.presence.ready === true && !S.counting) startCountdown(partner);
+  }
+  function startCountdown(partner) {
+    S.counting = true;
+    partnerFloatsAtStart = safeInt(partner.presence.floats);
+    const partnerDesign = safeDesign(partner.presence.design) || handDesign[OTHER[S.me]];
+    render();
+    const cd = $("countdown");
+    let n = 3;
+    const tick = () => {
+      if (n === 0) {
+        cd.innerHTML = "";
+        const other = OTHER[S.me];
+        launch(S.me, S.design, $("wish").value.trim());
+        launch(other, partnerDesign, "");
+        seen[other] = Math.max(seen[other] || 0, partnerFloatsAtStart + 1);
+        S.floats++; store.set("lk.floats", String(S.floats));
+        S.ready = false; S.counting = false;
+        $("wish").value = "";
+        push(); render();
+        celebrate(true);
+        return;
+      }
+      cd.innerHTML = "";
+      const s = document.createElement("span"); s.textContent = n; cd.appendChild(s);
+      n--; setTimeout(tick, 1000);
+    };
+    tick();
+  }
+  function soloLaunch() {
+    launch(S.me, S.design, $("wish").value.trim());
+    $("wish").value = "";
+    S.floats++; store.set("lk.floats", String(S.floats));
+    S.ready = false; push(); render();
+    celebrate(false);
+  }
+
+  // ---------- render ----------
+  function render() {
+    $("pick").hidden = !!S.me;
+    $("main").hidden = !S.me;
+    for (const b of designsEl.children) b.setAttribute("aria-pressed", String(b.dataset.key === S.design));
+    const status = {};
+    for (const name of ["big", "kwan"]) {
+      const mine = name === S.me;
+      const p = mine ? null : peerFor(name);
+      const online = mine || !!p;
+      const ready = mine ? S.ready : !!(p && p.presence.ready === true);
+      status[name] = { online, ready };
+      const des = mine ? S.design : (p && safeDesign(p.presence.design)) || handDesign[name];
+      setHand(name, des);
+      bunnyEl[name].classList.toggle("ready", ready || (S.counting && online));
+      const dot = bunnyEl[name].querySelector(".dot");
+      dot.className = "dot" + (ready ? " ready" : online ? " on" : "");
+    }
+    if (!S.me) return;
+    const other = OTHER[S.me];
+    $("hello").textContent = "สวัสดี " + NAMES[S.me] + " ♡";
+    const st = $("status"); st.innerHTML = "";
+    for (const name of ["big", "kwan"]) {
+      const c = document.createElement("span"); c.className = "chip";
+      const d = document.createElement("span");
+      d.className = "dot" + (status[name].ready ? " ready" : status[name].online ? " on" : "");
+      c.appendChild(d);
+      c.appendChild(document.createTextNode(NAMES[name] + " · " + (status[name].ready ? "พร้อมลอย" : status[name].online ? "อยู่ที่นี่" : "ยังไม่เข้า")));
+      st.appendChild(c);
+    }
+    const hint = $("hint"), go = $("go"), solo = $("solo");
+    const pOnline = status[other].online, pReady = status[other].ready;
+    go.classList.toggle("waiting", S.ready);
+    if (S.counting) { hint.textContent = "นับถอยหลัง… ตั้งจิตอธิษฐานเลย"; go.textContent = "กำลังจะลอย ✨"; }
+    else if (!room) { hint.textContent = "หน้านี้ยังเชื่อมต่อกันไม่ได้ ลอยคนเดียวได้ก่อนนะ"; go.textContent = "ลอยเลย ♡"; }
+    else if (!pOnline) { hint.textContent = "รอ" + NAMES[other] + "เปิดลิงก์อยู่นะ ระหว่างนี้เลือกลายกระทงไปก่อน"; go.textContent = "ลอยคนเดียวก่อน ♡"; }
+    else if (S.ready && !pReady) { hint.textContent = "รอ" + NAMES[other] + "กดพร้อมอยู่…"; go.textContent = "ยกเลิกพร้อม"; }
+    else if (!S.ready && pReady) { hint.textContent = NAMES[other] + "พร้อมแล้ว! กดพร้อมลอยเลย แล้วจะนับ 3-2-1 ลอยพร้อมกัน"; go.textContent = "พร้อมลอย ♡"; }
+    else { hint.textContent = NAMES[other] + "มาแล้ว! กดพร้อมลอยทั้งคู่ แล้วจะนับ 3-2-1 ลอยพร้อมกัน"; go.textContent = "พร้อมลอย ♡"; }
+    solo.hidden = !room || !pOnline || S.counting;
+    $("mode").textContent = room ? "ลอยไปแล้ว " + S.floats + " ใบ" : "โหมดคนเดียว";
+  }
+
+  // ---------- floaters ----------
+  const floatsEl = $("floats");
+  const floaters = [];
+  function launch(who, design, wish) {
+    const hand = handEl[who];
+    const sr = sceneEl.getBoundingClientRect();
+    const hr = hand.getBoundingClientRect();
+    const r = { left: hr.left - sr.left, top: hr.top - sr.top, width: hr.width, height: hr.height };
+    const bankTop = $("bank").getBoundingClientRect().top - sr.top;
+    const el = document.createElement("div");
+    el.className = "floater";
+    el.style.setProperty("--kw", r.width + "px");
+    el.innerHTML = '<div class="glow"></div>' + krathongSVG(design);
+    if (wish) { const w = document.createElement("div"); w.className = "wish"; w.textContent = wish; el.appendChild(w); }
+    floatsEl.appendChild(el);
+    const x0 = r.left + r.width / 2, y0 = r.top + r.height / 2;
+    const spread = (Math.random() - .5) * W * .5;
+    floaters.push({ el, x0, y0, xw: x0 + (Math.random() - .5) * 30, yw: bankTop - 6, xEnd: W / 2 + spread, t0: performance.now(), seed: Math.random() * 10 });
+    if (floaters.length > 14) { const f = floaters.shift(); f.el.remove(); }
+    hand.classList.add("gone");
+    setTimeout(() => hand.classList.remove("gone"), 3500);
+    hearts(x0, y0, who === "big" ? "#9cc9ff" : "#ff9cc4");
+  }
+  function stepFloaters(now) {
+    const horizon = H * 0.46 + 12;
+    for (const f of floaters) {
+      const el = now - f.t0;
+      let x, y, s, rot;
+      if (el < 1200) {
+        const p = el / 1200;
+        x = f.x0 + (f.xw - f.x0) * p;
+        y = f.y0 + (f.yw - f.y0) * p - Math.sin(Math.PI * p) * 60;
+        s = 1; rot = 0;
+      } else {
+        const q = Math.min(1, (el - 1200) / 24000);
+        const e = 1 - Math.pow(1 - q, 2);
+        s = 1 - .78 * e;
+        y = f.yw + (horizon - f.yw) * e + Math.sin(now / 800 + f.seed) * 3 * s;
+        x = f.xw + (f.xEnd - f.xw) * e + Math.sin(now / 1300 + f.seed) * 8 * s;
+        rot = Math.sin(now / 700 + f.seed) * 4;
+      }
+      f.el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -60%) scale(${s}) rotate(${rot}deg)`;
+      f.el.style.zIndex = Math.round(y);
+    }
+  }
+
+  // ---------- canvases ----------
+  const sceneEl = $("scene");
+  const bg = $("bg"), fx = $("fx");
+  const bgc = bg.getContext("2d"), fxc = fx.getContext("2d");
+  let W = 0, H = 0, DPR = 1, stars = [], flies = [], shimmer = [];
+  const particles = [];
+  function resize() {
+    DPR = Math.min(2, devicePixelRatio || 1);
+    W = sceneEl.clientWidth || innerWidth; H = sceneEl.clientHeight || innerHeight;
+    for (const c of [bg, fx]) { c.width = W * DPR; c.height = H * DPR; }
+    bgc.setTransform(DPR, 0, 0, DPR, 0, 0); fxc.setTransform(DPR, 0, 0, DPR, 0, 0);
+    stars = Array.from({ length: Math.round(W * H / 6000) }, () => ({ x: Math.random() * W, y: Math.random() * H * .44, r: Math.random() * 1.4 + .3, p: Math.random() * 6 }));
+    flies = Array.from({ length: 22 }, () => ({ x: Math.random() * W, y: H * (.5 + Math.random() * .4), p: Math.random() * 6, v: Math.random() * .4 + .2 }));
+    shimmer = Array.from({ length: 140 }, () => ({ x: Math.random(), y: Math.random(), w: Math.random() * 30 + 10, p: Math.random() * 6 }));
+  }
+  addEventListener("resize", resize);
+  resize();
+
+  function drawBg(t) {
+    bgc.clearRect(0, 0, W, H);
+    for (const s of stars) {
+      bgc.globalAlpha = .4 + .6 * Math.abs(Math.sin(t / 900 + s.p));
+      bgc.fillStyle = "#fff8e6";
+      bgc.beginPath(); bgc.arc(s.x, s.y, s.r, 0, 7); bgc.fill();
+    }
+    bgc.globalAlpha = 1;
+    const hz = H * .46;
+    // far bank with little chedi silhouettes
+    bgc.fillStyle = "#231a48";
+    bgc.beginPath(); bgc.moveTo(0, hz);
+    for (let x = 0; x <= W; x += 20) bgc.lineTo(x, hz - 8 - Math.sin(x / 70) * 5 - Math.sin(x / 23) * 2);
+    bgc.lineTo(W, hz); bgc.closePath(); bgc.fill();
+    // moon reflection + water shimmer
+    const mx = W * .78;
+    for (const s of shimmer) {
+      const y = hz + 6 + s.y * (H - hz);
+      const near = (y - hz) / (H - hz);
+      const nearMoon = Math.random() < .5;
+      const x = nearMoon ? mx + (s.x - .5) * 90 * (1 + near) : s.x * W;
+      const a = (.15 + .35 * Math.abs(Math.sin(t / 700 + s.p))) * (nearMoon ? 1 : .4);
+      bgc.strokeStyle = nearMoon ? `rgba(255,240,200,${a})` : `rgba(200,190,255,${a})`;
+      bgc.lineWidth = 1 + near;
+      bgc.beginPath(); bgc.moveTo(x - s.w * (.4 + near) / 2, y); bgc.lineTo(x + s.w * (.4 + near) / 2, y); bgc.stroke();
+    }
+  }
+
+  function drawFx(t) {
+    fxc.clearRect(0, 0, W, H);
+    for (const f of flies) {
+      f.x += Math.cos(t / 1500 + f.p) * f.v; f.y += Math.sin(t / 1100 + f.p) * f.v * .6;
+      if (f.x < 0) f.x = W; if (f.x > W) f.x = 0;
+      const a = .3 + .7 * Math.abs(Math.sin(t / 600 + f.p));
+      fxc.fillStyle = `rgba(255,236,140,${a})`;
+      fxc.shadowColor = "#ffe68a"; fxc.shadowBlur = 8;
+      fxc.beginPath(); fxc.arc(f.x, f.y, 1.8, 0, 7); fxc.fill();
+    }
+    fxc.shadowBlur = 0;
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.life++; p.x += p.vx; p.y += p.vy; p.vy += p.g; p.vx *= .985; p.vy *= .985;
+      const a = 1 - p.life / p.max;
+      if (a <= 0) { particles.splice(i, 1); continue; }
+      fxc.globalAlpha = a;
+      if (p.type === "rocket") {
+        fxc.fillStyle = "#fff2c4"; fxc.beginPath(); fxc.arc(p.x, p.y, 2.2, 0, 7); fxc.fill();
+        if (p.life % 2 === 0) particles.push({ type: "spark", x: p.x, y: p.y, vx: (Math.random() - .5) * .4, vy: .6, g: .01, life: 0, max: 26, color: "#ffcf7a", size: 1.3 });
+        if (p.vy >= -0.6 || p.y <= p.ty) { particles.splice(i, 1); burst(p.x, p.y, p.kind); }
+        continue;
+      }
+      if (p.type === "heart") {
+        fxc.fillStyle = p.color; fxc.font = `${p.size}px sans-serif`; fxc.fillText("♥", p.x, p.y);
+      } else {
+        fxc.fillStyle = p.color; fxc.beginPath(); fxc.arc(p.x, p.y, p.size, 0, 7); fxc.fill();
+      }
+    }
+    fxc.globalAlpha = 1;
+  }
+
+  function hearts(x, y, color) {
+    for (let i = 0; i < 14; i++) {
+      particles.push({ type: "heart", x, y, vx: (Math.random() - .5) * 3, vy: -Math.random() * 3 - 1.5, g: .02, life: 0, max: 70 + Math.random() * 40, color: i % 3 ? color : "#fff", size: 12 + Math.random() * 10 });
+    }
+  }
+  const FW_COLORS = ["#ff8fbf", "#ffd77a", "#9cc9ff", "#c9a8ff", "#9ff0c8", "#ffffff", "#ffb07a"];
+  const pick = (a) => a[Math.floor(Math.random() * a.length)];
+  function burst(x, y, kind) {
+    const c = pick(FW_COLORS), c2 = pick(FW_COLORS);
+    const scale = Math.min(W, H) / 420;
+    if (kind === "heart") {
+      for (let i = 0; i < 70; i++) {
+        const t = (i / 70) * Math.PI * 2;
+        const hx = 16 * Math.pow(Math.sin(t), 3);
+        const hy = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+        particles.push({ type: "spark", x, y, vx: hx * .2 * scale, vy: hy * .2 * scale, g: .012, life: 0, max: 80, color: i % 5 ? "#ff8fbf" : "#fff", size: 2.2 });
+      }
+    } else if (kind === "willow") {
+      for (let i = 0; i < 90; i++) {
+        const a = Math.random() * Math.PI * 2, sp = (1 + Math.random() * 2.6) * scale;
+        particles.push({ type: "spark", x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, g: .045, life: 0, max: 110 + Math.random() * 40, color: i % 3 ? "#ffd77a" : "#fff2c4", size: 1.6 });
+      }
+    } else {
+      for (let i = 0; i < 80; i++) {
+        const a = (i / 80) * Math.PI * 2, sp = (2.4 + (i % 2) * 1.4) * scale;
+        particles.push({ type: "spark", x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, g: .035, life: 0, max: 65 + Math.random() * 30, color: i % 2 ? c : c2, size: 2 });
+      }
+      for (let i = 0; i < 6; i++) particles.push({ type: "heart", x, y, vx: (Math.random() - .5) * 2.5, vy: (Math.random() - .5) * 2.5, g: .02, life: 0, max: 80, color: c, size: 14 });
+    }
+  }
+  function rocket(kind) {
+    const x = W * (.12 + Math.random() * .76), ty = H * (.08 + Math.random() * .24);
+    const y = H * .46;
+    const vy = -Math.sqrt(2 * .06 * (y - ty)) - .3;
+    particles.push({ type: "rocket", x, y, vx: (Math.random() - .5) * .8, vy, g: .06, life: 0, max: 400, ty, kind: kind || pick(["ring", "ring", "heart", "willow"]) });
+  }
+  function firework(x, y) { burst(x, y, pick(["ring", "heart", "willow"])); }
+  function fireworkShow(n) {
+    for (let i = 0; i < n; i++) setTimeout(() => rocket(), i * (380 + Math.random() * 300));
+  }
+  $("fwbtn").onclick = () => {
+    fireworkShow(5);
+    S.fw++; push();
+  };
+  function lanterns(n) {
+    const box = $("lanterns");
+    for (let i = 0; i < n; i++) {
+      setTimeout(() => {
+        const l = document.createElement("div");
+        l.className = "lantern";
+        l.style.left = (5 + Math.random() * 90) + "%";
+        l.style.setProperty("--dur", (14 + Math.random() * 8) + "s");
+        l.style.setProperty("--sway", ((Math.random() - .5) * 80) + "px");
+        l.addEventListener("animationend", () => l.remove());
+        box.appendChild(l);
+      }, i * 450);
+    }
+  }
+  function celebrate(together) {
+    const b = $("banner");
+    b.textContent = together ? "ลอยพร้อมกันแล้ว ♡ บิ๊ก & ขวัญ" : "ลอยไปแล้ว ♡";
+    b.classList.remove("show"); void b.offsetWidth; b.classList.add("show");
+    lanterns(together ? 14 : 6);
+    setTimeout(() => fireworkShow(together ? 14 : 5), 400);
+    if (together) setTimeout(() => { rocket("heart"); rocket("heart"); }, 7000);
+  }
+
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function loop(t) {
+    drawBg(reduce ? 0 : t);
+    drawFx(t);
+    stepFloaters(t);
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+  lanterns(4);
+  setInterval(() => { if (!document.hidden) lanterns(1); }, 7000);
+  setInterval(() => { if (!document.hidden && !reduce) rocket(); }, 6500);
+  setTimeout(() => fireworkShow(3), 800);
+
+  render();
+
+
+  // ---------- character pictures: put big.png / kwan.png next to this file ----------
+  const CHAR_IMG = { big: "big.png", kwan: "kwan.png" };
+  const CHAR_POS = { big: { x: 51.7, y: 74 }, kwan: { x: 52.7, y: 72.6 } };
+  function useImage(who) {
+    const img = new Image();
+    img.className = "b"; img.alt = NAMES[who];
+    img.onload = () => {
+      artEl[who].innerHTML = "";
+      artEl[who].appendChild(img);
+      bunnyEl[who].classList.add("custom");
+      handEl[who].style.left = CHAR_POS[who].x + "%";
+      handEl[who].style.top = CHAR_POS[who].y + "%";
+    };
+    img.src = CHAR_IMG[who];
+  }
+  useImage("big"); useImage("kwan");
+
+  // ---------- realtime sync over a public MQTT broker (no login) ----------
+  const ROOM_TOPIC = "loykrathong-bk/" + "r7q3m9x2v5";
+  const BROKERS = ["wss://broker.emqx.io:8084/mqtt", "wss://broker.hivemq.com:8884/mqtt"];
+  const STALE_MS = 3 * 60 * 1000;
+  function makeRoom() {
+    if (!window.mqtt) return null;
+    const myId = Math.random().toString(36).slice(2, 12);
+    const others = new Map();
+    let mine = {}, frozen = Object.freeze([]), listeners = [], client = null, brokerIdx = 0;
+    const stateTopic = (id) => ROOM_TOPIC + "/state/" + id;
+    function rebuild() {
+      const now = Date.now();
+      const list = [];
+      for (const [id, v] of others) {
+        if (now - v.seenAt > STALE_MS && now - (v.presence.t || 0) > STALE_MS) continue;
+        list.push(Object.freeze({ peer: id, kind: "viewer", sameTab: false, isMe: false, presence: Object.freeze(v.presence), updatedAt: v.updatedAt }));
+      }
+      frozen = Object.freeze(list);
+      listeners.forEach((fn) => { try { fn({ peers: frozen }); } catch (e) {} });
+    }
+    function publishMine() {
+      if (!client || !client.connected) return;
+      client.publish(stateTopic(myId), JSON.stringify({ ...mine, t: Date.now() }), { retain: true, qos: 1 });
+    }
+    function connect() {
+      const url = BROKERS[brokerIdx % BROKERS.length];
+      client = mqtt.connect(url, {
+        clientId: "lk_" + myId, clean: true, reconnectPeriod: 3000, connectTimeout: 8000,
+        will: { topic: stateTopic(myId), payload: "", retain: true, qos: 1 }
+      });
+      let opened = false;
+      const failover = setTimeout(() => { if (!opened) { client.end(true); brokerIdx++; connect(); } }, 9000);
+      client.on("connect", () => {
+        opened = true; clearTimeout(failover);
+        client.subscribe(ROOM_TOPIC + "/state/+", { qos: 1 });
+        publishMine();
+      });
+      client.on("message", (topic, payload) => {
+        const id = topic.split("/").pop();
+        if (id === myId) return;
+        const text = payload.toString();
+        if (!text) { others.delete(id); rebuild(); return; }
+        let data;
+        try { data = JSON.parse(text); } catch (e) { return; }
+        if (!data || typeof data !== "object") return;
+        const prev = others.get(id);
+        if (Date.now() - (data.t || 0) > STALE_MS && !prev) return;
+        others.set(id, { presence: data, updatedAt: Date.now(), seenAt: Date.now() });
+        rebuild();
+      });
+    }
+    connect();
+    addEventListener("pagehide", () => { try { client.publish(stateTopic(myId), "", { retain: true, qos: 0 }); client.end(); } catch (e) {} });
+    setInterval(() => { publishMine(); rebuild(); }, 60000);
+    return {
+      peers: () => frozen,
+      presence(patch) { mine = { ...mine, ...patch }; publishMine(); return Promise.resolve(); },
+      onPeers(fn) { listeners.push(fn); setTimeout(() => fn({ peers: frozen }), 0); return () => {}; }
+    };
+  }
+  room = makeRoom();
+  if (room) { room.onPeers(onRoomChange); push(); }
+  render();
+})();
+</script>
+</body>
+</html>

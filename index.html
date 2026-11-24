@@ -917,7 +917,7 @@ input#wish:focus { outline: none; border-color: var(--pink); }
     bgc.beginPath(); bgc.moveTo(x + 10 * s, y - 6 * s); bgc.lineTo(x + 10 * s, y - 30 * s); bgc.stroke();
     drawGlow(x + 10 * s, y - 26 * s, 26 * s, .45);
     bgc.fillStyle = "#e8473f"; bgc.beginPath(); bgc.ellipse(x + 10 * s, y - 25 * s, 4 * s, 5.5 * s, 0, 0, 7); bgc.fill();
-    for (let i = -2; i <= 0; i++) { bgc.fillStyle = K_COLORS[(i + 3) % 5][1]; bgc.beginPath(); bgc.arc(x + i * 8 * s - 4 * s, y - 9 * s, 3 * s, 0, 7); bgc.fill(); }
+    for (let i = -2; i <= 0; i++) { bgc.fillStyle = K_COLORS[(i + 3) % K_COLORS.length][1]; bgc.beginPath(); bgc.arc(x + i * 8 * s - 4 * s, y - 9 * s, 3 * s, 0, 7); bgc.fill(); }
   }
   function drawLightReflections(t, hz) {
     const r = Math.min(80, Math.max(34, W * .07)), cx = Math.max(r + 8, W * .1);

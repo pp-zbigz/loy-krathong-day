@@ -150,8 +150,7 @@ h1 small { display: block; font-size: 14px; color: var(--ink-soft); font-family:
 .label { font-size: 13px; color: var(--ink-soft); }
 .who { flex: 1; min-width: 120px; padding: 12px; border-radius: 16px; border: 2px solid var(--pink-soft); background: #fff; font-family: var(--font-display); font-size: 20px; color: var(--ink); cursor: pointer; }
 .who:hover, .who:focus-visible { border-color: var(--pink); outline: none; }
-.designs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; }
-.design div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 11px; }
+.designs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .design { border: 2px solid transparent; background: #fff; border-radius: 14px; padding: 4px 2px 6px; cursor: pointer; font: inherit; font-size: 12px; color: var(--ink); }
 .design[aria-pressed="true"] { border-color: var(--pink); background: #fff0f6; }
 .design:focus-visible { outline: 2px solid var(--pink); outline-offset: 2px; }
@@ -249,11 +248,9 @@ input#wish:focus { outline: none; border-color: var(--pink); }
   const NAMES = { big: "บิ๊ก", kwan: "ขวัญ" };
   const OTHER = { big: "kwan", kwan: "big" };
   const DESIGNS = {
-    sakura: { label: "ซากุระ",   deco: "sakura", leaf: "#7fb069", leaf2: "#5d8f4c", p1: "#ffd3e4", p2: "#ff8fbf", fl: "#ffc4dc", dot: "#ff5d9e", base: "#a8d48a", base2: "#5f8a45" },
-    star:   { label: "ดาวฟ้า",   deco: "star",   leaf: "#6fae95", leaf2: "#4f8a73", p1: "#dcebff", p2: "#8fb8ff", fl: "#fff6c2", dot: "#ffd54d", base: "#9fd0c0", base2: "#4f8a73" },
-    sun:    { label: "ทานตะวัน", deco: "sun",    leaf: "#8bbd62", leaf2: "#6a9a48", p1: "#fff1c2", p2: "#ffc94d", fl: "#ffb0c4", dot: "#ff7f7f", base: "#b6d87e", base2: "#6a9a48" },
-    heart:  { label: "หัวใจ",    deco: "heart",  leaf: "#7fb069", leaf2: "#5d8f4c", p1: "#ffe0ea", p2: "#ff6f9c", fl: "#fff", dot: "#ff3d7f", base: "#ffc9d9", base2: "#d9819e" },
-    candy:  { label: "ลูกกวาด",  deco: "candy",  leaf: "#9ad0b0", leaf2: "#d7b4ff", p1: "#fff0f8", p2: "#c9a8ff", fl: "#fff", dot: "#ff9cc4", base: "#e8dcff", base2: "#a98ad6" }
+    pink:  { label: "ชมพูพาสเทล", leaf: "#8cc08a", leaf2: "#6aa36a", p1: "#ffe3ee", p2: "#ffb6cf", fl: "#fff6fa", dot: "#ff8fb5" },
+    peach: { label: "สีโอรส",     leaf: "#8cc08a", leaf2: "#6aa36a", p1: "#ffe3d6", p2: "#ffab8f", fl: "#fff5ee", dot: "#ff8a6b" },
+    blue:  { label: "ฟ้าพาสเทล",  leaf: "#8cc08a", leaf2: "#6aa36a", p1: "#deedff", p2: "#a8cbf5", fl: "#f6fbff", dot: "#7fb0ea" }
   };
   const BUNNY = { big: { bow: "#6fb0ff", dress: "#b4d9ff" }, kwan: { bow: "#ff7fb0", dress: "#ffc8dd" } };
 
@@ -264,7 +261,7 @@ input#wish:focus { outline: none; border-color: var(--pink); }
 
   const S = {
     me: ["big", "kwan"].includes(store.get("lk.me")) ? store.get("lk.me") : null,
-    design: DESIGNS[store.get("lk.design")] ? store.get("lk.design") : "sakura",
+    design: DESIGNS[store.get("lk.design")] ? store.get("lk.design") : "pink",
     ready: false,
     floats: parseInt(store.get("lk.floats") || "0", 10) || 0,
     fw: 0,
@@ -274,8 +271,8 @@ input#wish:focus { outline: none; border-color: var(--pink); }
   const seen = {};
 
   // ---------- SVG builders ----------
-  function krathongSVG(key) {
-    const d = DESIGNS[key] || DESIGNS.sakura;
+  function krathongSVGCute(key) {
+    const d = DESIGNS[key] || DESIGNS.pink;
     const n = (v) => v.toFixed(1);
     const flower5 = (x, y, r, c, mid) => {
       let s = "";
@@ -334,8 +331,8 @@ input#wish:focus { outline: none; border-color: var(--pink); }
     </svg>`;
   }
 
-  function krathongSVGOld(key) {
-    const d = DESIGNS[key] || DESIGNS.sakura;
+  function krathongSVG(key) {
+    const d = DESIGNS[key] || DESIGNS.pink;
     let leaves = "", petals = "", petals2 = "";
     for (let i = 0; i < 9; i++) {
       const x = 10 + i * 12.5;
@@ -528,14 +525,14 @@ input#wish:focus { outline: none; border-color: var(--pink); }
       <text x="90" y="133" text-anchor="middle" font-family="Itim, Mali, sans-serif" font-size="15" fill="#4a2f45">${label}</text>
     </svg>`;
   }
-  const handDesign = { big: "star", kwan: "sakura" };
+  const handDesign = { big: "blue", kwan: "pink" };
   function setHand(who, design) {
     if (handDesign[who] === design && handEl[who].innerHTML) return;
     handDesign[who] = design;
     handEl[who].innerHTML = krathongSVG(design);
   }
-  setHand("big", "star"); handEl.big.innerHTML = krathongSVG("star");
-  setHand("kwan", "sakura"); handEl.kwan.innerHTML = krathongSVG("sakura");
+  setHand("big", "blue"); handEl.big.innerHTML = krathongSVG("blue");
+  setHand("kwan", "pink"); handEl.kwan.innerHTML = krathongSVG("pink");
 
   const designsEl = $("designs");
   for (const key of Object.keys(DESIGNS)) {
@@ -798,7 +795,7 @@ input#wish:focus { outline: none; border-color: var(--pink); }
   }
 
   // ---------- river life ----------
-  var K_COLORS = [["#ffc4dc", "#ff8fbf"], ["#cfe3ff", "#8fb8ff"], ["#ffe9a8", "#ffc94d"], ["#e3d2ff", "#b597ff"], ["#c9f2dc", "#7fd6a6"]];
+  var K_COLORS = [["#ffe3ee", "#ffb6cf"], ["#ffe3d6", "#ffab8f"], ["#deedff", "#a8cbf5"]];
   var riverK = [], pads = [], ripples = [], fishes = [], boat = null, nextFish = 0, waterBottom = 0;
   function depthY(d) { const hz = H * .46; return hz + 8 + Math.pow(d, 1.5) * (waterBottom - hz - 8); }
   function initRiver() {

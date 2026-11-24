@@ -115,6 +115,8 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events
 #fwbtn { position: absolute; right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(clamp(150px, 26vh, 230px) + 12px); border: 0; border-radius: 999px; padding: 10px 16px; font-family: var(--font-display); font-size: 17px; color: #4a2f45; background: linear-gradient(180deg, #fff3b8, var(--gold)); box-shadow: 0 0 18px rgba(255, 215, 122, .6); cursor: pointer; z-index: 3; }
 #fwbtn:active { transform: translateY(2px); }
 #musicbtn { position: absolute; left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(clamp(150px, 26vh, 230px) + 12px); border: 0; border-radius: 999px; padding: 10px 16px; font-family: var(--font-display); font-size: 17px; color: #4a2f45; background: linear-gradient(180deg, #fff, var(--pink-soft)); box-shadow: 0 0 14px rgba(255, 180, 210, .5); cursor: pointer; z-index: 3; }
+#ytbox { position: absolute; left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(clamp(150px, 26vh, 230px) + 62px); width: 160px; height: 90px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 18px rgba(20, 10, 50, .5); z-index: 3; background: #000; }
+#ytbox iframe { width: 100%; height: 100%; border: 0; display: block; }
 #musicbtn[aria-pressed="true"] { background: linear-gradient(180deg, #ffd3e4, var(--pink)); color: #fff; }
 #musicbtn:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
 #fwbtn:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
@@ -214,6 +216,7 @@ input#wish:focus { outline: none; border-color: var(--pink); }
   <canvas id="fx"></canvas>
   <button id="fwbtn" type="button">จุดพลุ</button>
   <button id="musicbtn" type="button" aria-pressed="false">♪ เปิดเพลง</button>
+  <div id="ytbox" hidden><div id="ytplayer"></div></div>
   <div id="banner"></div>
   <div id="countdown"></div>
 
@@ -1220,8 +1223,30 @@ input#wish:focus { outline: none; border-color: var(--pink); }
       clearInterval(timer); timer = setInterval(schedule, 60);
     }
     function stopSynth() { clearInterval(timer); timer = null; if (ctx) ctx.suspend(); }
-    function start() {
-      on = true; render();
+    // YouTube song (played through YouTube's own embedded player)
+    const YT_ID = "95s3Y8nVMV4";
+    let yt = null, ytReady = false, ytFailed = false, ytWanted = false;
+    function loadYT() {
+      if (window.YT && window.YT.Player) { makeYT(); return; }
+      window.onYouTubeIframeAPIReady = makeYT;
+      const s = document.createElement("script");
+      s.src = "https://www.youtube.com/iframe_api";
+      s.onerror = () => { ytFailed = true; if (on) startFallback(); };
+      document.head.appendChild(s);
+    }
+    function makeYT() {
+      if (yt) return;
+      yt = new YT.Player("ytplayer", {
+        videoId: YT_ID,
+        playerVars: { autoplay: 0, controls: 1, loop: 1, playlist: YT_ID, playsinline: 1, rel: 0 },
+        events: {
+          onReady: () => { ytReady = true; yt.setVolume(70); if (ytWanted) yt.playVideo(); },
+          onError: () => { ytFailed = true; $("ytbox").hidden = true; if (on) startFallback(); }
+        }
+      });
+    }
+    loadYT();
+    function startFallback() {
       if (useFile === false) { startSynth(); return; }
       if (!audioEl) {
         audioEl = new Audio("bgm.mp3"); audioEl.loop = true; audioEl.volume = .6;
@@ -1229,7 +1254,30 @@ input#wish:focus { outline: none; border-color: var(--pink); }
       }
       audioEl.play().then(() => { useFile = true; }).catch(() => { useFile = false; if (on) startSynth(); });
     }
-    function stop() { on = false; render(); if (audioEl) audioEl.pause(); stopSynth(); }
+    function start() {
+      on = true; render();
+      if (!ytFailed) {
+        ytWanted = true;
+        $("ytbox").hidden = false;
+        if (ytReady) yt.playVideo();
+        return;
+      }
+      startFallback();
+    }
+    function startOld() {
+      if (useFile === false) { startSynth(); return; }
+      if (!audioEl) {
+        audioEl = new Audio("bgm.mp3"); audioEl.loop = true; audioEl.volume = .6;
+        audioEl.addEventListener("error", () => { useFile = false; if (on) startSynth(); }, { once: true });
+      }
+      audioEl.play().then(() => { useFile = true; }).catch(() => { useFile = false; if (on) startSynth(); });
+    }
+    function stop() {
+      on = false; ytWanted = false; render();
+      if (yt && ytReady) yt.pauseVideo();
+      $("ytbox").hidden = true;
+      if (audioEl) audioEl.pause(); stopSynth();
+    }
     function render() {
       const b = $("musicbtn");
       b.setAttribute("aria-pressed", String(on));
@@ -1238,6 +1286,7 @@ input#wish:focus { outline: none; border-color: var(--pink); }
     $("musicbtn").onclick = () => { if (on) { userOff = true; stop(); } else { userOff = false; start(); } };
     document.addEventListener("visibilitychange", () => {
       if (!on) return;
+      if (!ytFailed) return;
       if (document.hidden) { if (audioEl) audioEl.pause(); if (ctx) ctx.suspend(); }
       else if (useFile) audioEl.play().catch(() => {}); else if (ctx) { ctx.resume(); nextTime = ctx.currentTime + .05; }
     });

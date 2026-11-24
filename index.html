@@ -1248,7 +1248,7 @@ input#wish:focus { outline: none; border-color: var(--pink); }
     function startFallback() {
       if (useFile === false) { startSynth(); return; }
       if (!audioEl) {
-        audioEl = new Audio("bgm.mp3"); audioEl.loop = true; audioEl.volume = .25;
+        audioEl = new Audio("bgm.mp3"); audioEl.loop = true; audioEl.volume = .15;
         audioEl.addEventListener("error", () => { useFile = false; if (on) startSynth(); }, { once: true });
       }
       audioEl.play().then(() => { useFile = true; }).catch(() => { useFile = false; if (on) startSynth(); });

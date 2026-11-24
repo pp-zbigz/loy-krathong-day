@@ -181,7 +181,20 @@ h1 small { display: block; font-size: 14px; color: var(--ink-soft); font-family:
 .label { font-size: 13px; color: var(--ink-soft); }
 .who { flex: 1; min-width: 120px; padding: 12px; border-radius: 16px; border: 2px solid var(--pink-soft); background: #fff; font-family: var(--font-display); font-size: 20px; color: var(--ink); cursor: pointer; }
 .who:hover, .who:focus-visible { border-color: var(--pink); outline: none; }
-.designs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+#panel { max-height: calc(100% - 24px); overflow-y: auto; }
+.maker { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 10px; align-items: center; background: #fff; border-radius: 16px; padding: 8px; }
+.maker-preview { background: radial-gradient(circle at 50% 60%, #3a2a6e, #1b1440); border-radius: 12px; padding: 6px 4px; }
+.maker-preview svg { display: block; width: 100%; height: auto; }
+.maker-opts { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.opt { display: grid; grid-template-columns: 52px minmax(0, 1fr); align-items: center; gap: 6px; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.chip-btn { border: 2px solid transparent; border-radius: 999px; background: #f6e9f1; color: var(--ink); font: inherit; font-size: 12px; padding: 2px 8px; cursor: pointer; line-height: 1.5; }
+.chip-btn.dot-btn { width: 22px; height: 22px; padding: 0; border-color: #fff; box-shadow: 0 0 0 1px #e8d4df; }
+.chip-btn[aria-pressed="true"] { border-color: var(--pink); background: #ffe3ee; }
+.chip-btn.dot-btn[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--pink); }
+.chip-btn:focus-visible { outline: 2px solid var(--pink); outline-offset: 1px; }
+input#ktext { width: 100%; box-sizing: border-box; border: 2px solid var(--pink-soft); border-radius: 10px; padding: 4px 8px; font: inherit; font-size: 13px; color: var(--ink); background: #fff; color-scheme: light; }
+input#ktext:focus { outline: none; border-color: var(--pink); }
 .design { border: 2px solid transparent; background: #fff; border-radius: 14px; padding: 4px 2px 6px; cursor: pointer; font: inherit; font-size: 12px; color: var(--ink); }
 .design[aria-pressed="true"] { border-color: var(--pink); background: #fff0f6; }
 .design:focus-visible { outline: 2px solid var(--pink); outline-offset: 2px; }
@@ -262,9 +275,14 @@ input#wish:focus { outline: none; border-color: var(--pink); }
     <div class="collapsible" id="main" hidden>
       <div style="display:flex;flex-direction:column;gap:10px">
         <div class="sub"><span class="label" id="hello"></span><button class="link" id="switch" type="button">ไม่ใช่เรา?</button></div>
-        <div>
-          <div class="label" style="margin-bottom:4px">เลือกลายกระทง</div>
-          <div class="designs" id="designs"></div>
+        <div class="maker">
+          <div class="maker-preview" id="kpreview"></div>
+          <div class="maker-opts">
+            <div class="opt"><span class="label">สีกลีบ</span><div class="chips" id="opt-c"></div></div>
+            <div class="opt"><span class="label">ของแต่ง</span><div class="chips" id="opt-d"></div></div>
+            <div class="opt"><span class="label">สีเทียน</span><div class="chips" id="opt-w"></div></div>
+            <div class="opt"><label class="label" for="ktext">ป้ายชื่อ</label><input id="ktext" maxlength="8" placeholder="เช่น บิ๊ก♡ขวัญ" autocomplete="off"></div>
+          </div>
         </div>
         <input id="wish" maxlength="80" placeholder="อธิษฐานในใจ (เห็นแค่เรา)" autocomplete="off">
         <div class="status" id="status"></div>
@@ -284,8 +302,27 @@ input#wish:focus { outline: none; border-color: var(--pink); }
   const DESIGNS = {
     pink:  { label: "ชมพูพาสเทล", leaf: "#8cc08a", leaf2: "#6aa36a", p1: "#ffe3ee", p2: "#ffb6cf", fl: "#fff6fa", dot: "#ff8fb5" },
     peach: { label: "สีโอรส",     leaf: "#8cc08a", leaf2: "#6aa36a", p1: "#ffe3d6", p2: "#ffab8f", fl: "#fff5ee", dot: "#ff8a6b" },
-    blue:  { label: "ฟ้าพาสเทล",  leaf: "#8cc08a", leaf2: "#6aa36a", p1: "#deedff", p2: "#a8cbf5", fl: "#f6fbff", dot: "#7fb0ea" }
+    blue:  { label: "ฟ้าพาสเทล",  leaf: "#8cc08a", leaf2: "#6aa36a", p1: "#deedff", p2: "#a8cbf5", fl: "#f6fbff", dot: "#7fb0ea" },
+    lilac: { label: "ม่วงพาสเทล", leaf: "#8cc08a", leaf2: "#6aa36a", p1: "#efe4ff", p2: "#c9adf0", fl: "#fbf7ff", dot: "#a983e0" },
+    mint:  { label: "เขียวมินต์",  leaf: "#7fb69a", leaf2: "#5f9a7d", p1: "#dff7ec", p2: "#9ddcbf", fl: "#f4fffa", dot: "#5cbf93" },
+    cream: { label: "เหลืองครีม", leaf: "#8cc08a", leaf2: "#6aa36a", p1: "#fff6d8", p2: "#ffdf8f", fl: "#fffdf3", dot: "#f2b84b" }
   };
+  const DECOS = { flower: "ดอกไม้", heart: "หัวใจ", star: "ดาว", pearl: "ไข่มุก", none: "ไม่แต่ง" };
+  const CANDLES = { white: ["#fff6e0", "#f0d8a8"], pink: ["#ffd3e4", "#f2a5c3"], blue: ["#d6e8ff", "#a3c4ec"] };
+  // a krathong "spec" is a string: color|deco|candle|flag text
+  function parseSpec(v) {
+    if (typeof v !== "string") return null;
+    const parts = v.split("|");
+    if (!DESIGNS[parts[0]]) return null;
+    return {
+      c: parts[0],
+      d: DECOS[parts[1]] ? parts[1] : "flower",
+      w: CANDLES[parts[2]] ? parts[2] : "white",
+      t: cleanText(parts.slice(3).join(""))
+    };
+  }
+  function cleanText(s) { return Array.from(String(s || "").replace(/[|<>&"'\u0000-\u001f]/g, "")).slice(0, 8).join(""); }
+  function specStr(o) { return [o.c, o.d, o.w, cleanText(o.t)].join("|"); }
   const BUNNY = { big: { bow: "#6fb0ff", dress: "#b4d9ff" }, kwan: { bow: "#ff7fb0", dress: "#ffc8dd" } };
 
   const store = {
@@ -295,7 +332,7 @@ input#wish:focus { outline: none; border-color: var(--pink); }
 
   const S = {
     me: ["big", "kwan"].includes(store.get("lk.me")) ? store.get("lk.me") : null,
-    design: DESIGNS[store.get("lk.design")] ? store.get("lk.design") : "pink",
+    design: parseSpec(store.get("lk.design")) ? store.get("lk.design") : "pink|flower|white|",
     ready: false,
     floats: parseInt(store.get("lk.floats") || "0", 10) || 0,
     fw: 0,
@@ -366,7 +403,8 @@ input#wish:focus { outline: none; border-color: var(--pink); }
   }
 
   function krathongSVG(key) {
-    const d = DESIGNS[key] || DESIGNS.pink;
+    const sp = parseSpec(key) || parseSpec("pink");
+    const d = DESIGNS[sp.c];
     let leaves = "", petals = "", petals2 = "";
     for (let i = 0; i < 9; i++) {
       const x = 10 + i * 12.5;
@@ -381,15 +419,31 @@ input#wish:focus { outline: none; border-color: var(--pink); }
       petals2 += `<path d="M${x - 7} 60 Q${x} ${38} ${x + 7} 60 Z" fill="${d.p2}"/>`;
       petals2 += `<circle cx="${x}" cy="52" r="1.6" fill="${d.dot}"/>`;
     }
+    const n = (v) => v.toFixed(1);
     let flowers = "";
-    [[44, 58], [76, 58], [60, 62]].forEach(([x, y]) => {
-      for (let k = 0; k < 5; k++) {
-        const a = (k / 5) * Math.PI * 2;
-        flowers += `<circle cx="${(x + Math.cos(a) * 3.4).toFixed(1)}" cy="${(y + Math.sin(a) * 3.4).toFixed(1)}" r="2.6" fill="${d.fl}"/>`;
+    [[44, 58], [76, 58], [60, 62]].forEach(([x, y], i) => {
+      if (sp.d === "flower") {
+        for (let k = 0; k < 5; k++) {
+          const a = (k / 5) * Math.PI * 2;
+          flowers += `<circle cx="${n(x + Math.cos(a) * 3.4)}" cy="${n(y + Math.sin(a) * 3.4)}" r="2.6" fill="${d.fl}"/>`;
+        }
+        flowers += `<circle cx="${x}" cy="${y}" r="2" fill="${d.dot}"/>`;
+      } else if (sp.d === "heart") {
+        const r = 4.2;
+        flowers += `<path d="M${x} ${n(y + r * .9)} C${n(x - r * 1.6)} ${n(y - r * .2)} ${n(x - r * .6)} ${n(y - r * 1.3)} ${x} ${n(y - r * .4)} C${n(x + r * .6)} ${n(y - r * 1.3)} ${n(x + r * 1.6)} ${n(y - r * .2)} ${x} ${n(y + r * .9)} Z" fill="${i === 2 ? d.dot : d.fl}" stroke="${d.dot}" stroke-width=".8"/>`;
+      } else if (sp.d === "star") {
+        let p = "";
+        for (let k = 0; k < 10; k++) { const a = k / 10 * Math.PI * 2 - Math.PI / 2, rr = k % 2 ? 2.4 : 5.4; p += `${k ? "L" : "M"}${n(x + Math.cos(a) * rr)} ${n(y + Math.sin(a) * rr)}`; }
+        flowers += `<path d="${p}Z" fill="${i === 2 ? "#ffe066" : "#fff6c2"}" stroke="#f2c94c" stroke-width=".6"/>`;
+      } else if (sp.d === "pearl") {
+        for (let k = -2; k <= 2; k++) flowers += `<circle cx="${x + k * 3.2}" cy="${n(y + Math.abs(k) * -.6)}" r="1.9" fill="#fffdf8" stroke="#e8dccf" stroke-width=".5"/>`;
       }
-      flowers += `<circle cx="${x}" cy="${y}" r="2" fill="${d.dot}"/>`;
     });
-    return `<svg viewBox="0 0 120 92" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    const [cFill, cStroke] = CANDLES[sp.w];
+    const flag = sp.t ? `<line x1="90" y1="62" x2="90" y2="20" stroke="#8a5a3c" stroke-width="1.3"/>
+      <path d="M90 20 L117 20 L113 27 L117 34 L90 34 Z" fill="#fff" stroke="${d.p2}" stroke-width="1"/>
+      <text x="102" y="30.5" text-anchor="middle" font-family="Itim, Mali, sans-serif" font-size="${sp.t.length > 5 ? 6 : 8}" fill="#4a2f45">${sp.t}</text>` : "";
+    return `<svg viewBox="0 0 122 92" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <ellipse cx="60" cy="80" rx="54" ry="10" fill="#4f6e3a"/>
       <ellipse cx="60" cy="76" rx="54" ry="9" fill="#9cc47a"/>
       <ellipse cx="60" cy="76" rx="46" ry="6" fill="#c9e3a6"/>
@@ -397,9 +451,9 @@ input#wish:focus { outline: none; border-color: var(--pink); }
       <line x1="50" y1="56" x2="47" y2="24" stroke="#8a5a3c" stroke-width="1.4"/>
       <line x1="54" y1="56" x2="53" y2="22" stroke="#8a5a3c" stroke-width="1.4"/>
       <circle cx="47" cy="24" r="1.6" fill="#ff6a3d"/><circle cx="53" cy="22" r="1.6" fill="#ff6a3d"/>
-      <rect x="62" y="36" width="7" height="22" rx="2" fill="#fff6e0" stroke="#f0d8a8"/>
+      <rect x="62" y="36" width="7" height="22" rx="2" fill="${cFill}" stroke="${cStroke}"/>
       <g class="flame"><path d="M65.5 22 Q70 30 65.5 36 Q61 30 65.5 22 Z" fill="#ffcf5a"/><path d="M65.5 27 Q67.5 31 65.5 35 Q63.5 31 65.5 27 Z" fill="#fff4c4"/></g>
-      ${flowers}
+      ${flowers}${flag}
     </svg>`;
   }
 
@@ -700,15 +754,34 @@ input#wish:focus { outline: none; border-color: var(--pink); }
   setHand("big", "blue"); handEl.big.innerHTML = krathongSVG("blue");
   setHand("kwan", "pink"); handEl.kwan.innerHTML = krathongSVG("pink");
 
-  const designsEl = $("designs");
-  for (const key of Object.keys(DESIGNS)) {
-    const b = document.createElement("button");
-    b.type = "button"; b.className = "design"; b.id = "design-" + key; b.dataset.key = key;
-    b.innerHTML = krathongSVG(key);
-    const t = document.createElement("div"); t.textContent = DESIGNS[key].label; b.appendChild(t);
-    b.addEventListener("click", () => { S.design = key; store.set("lk.design", key); push(); render(); });
-    designsEl.appendChild(b);
+  // krathong maker: colour, decoration, candle, name flag
+  const cur = () => parseSpec(S.design) || parseSpec("pink");
+  function setSpec(patch) {
+    S.design = specStr({ ...cur(), ...patch });
+    store.set("lk.design", S.design);
+    push(); render();
   }
+  const optButtons = [];
+  function addChips(el, field, entries, dot) {
+    for (const [key, label, color] of entries) {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "chip-btn" + (dot ? " dot-btn" : ""); b.id = `opt-${field}-${key}`;
+      b.dataset.field = field; b.dataset.key = key;
+      if (dot) { b.style.background = color; b.title = label; b.setAttribute("aria-label", label); }
+      else b.textContent = label;
+      b.addEventListener("click", () => setSpec({ [field]: key }));
+      el.appendChild(b); optButtons.push(b);
+    }
+  }
+  addChips($("opt-c"), "c", Object.keys(DESIGNS).map((k) => [k, DESIGNS[k].label, DESIGNS[k].p2]), true);
+  addChips($("opt-d"), "d", Object.keys(DECOS).map((k) => [k, DECOS[k]]), false);
+  addChips($("opt-w"), "w", [["white", "เทียนขาว", CANDLES.white[0]], ["pink", "เทียนชมพู", CANDLES.pink[1]], ["blue", "เทียนฟ้า", CANDLES.blue[1]]], true);
+  $("ktext").value = cur().t;
+  let textTimer = null;
+  $("ktext").addEventListener("input", () => {
+    clearTimeout(textTimer);
+    textTimer = setTimeout(() => setSpec({ t: $("ktext").value }), 250);
+  });
 
   $("pick-big").onclick = () => choose("big");
   $("pick-kwan").onclick = () => choose("kwan");
@@ -750,7 +823,7 @@ input#wish:focus { outline: none; border-color: var(--pink); }
     const list = peersOf(name);
     return list.length ? list.reduce((a, b) => (b.updatedAt > a.updatedAt ? b : a)) : null;
   }
-  function safeDesign(v) { return typeof v === "string" && DESIGNS[v] ? v : null; }
+  function safeDesign(v) { const p = parseSpec(v); return p ? specStr(p) : null; }
   function safeInt(v) { return Number.isFinite(v) ? Math.max(0, Math.floor(v)) : 0; }
 
   let partnerFloatsAtStart = 0;
@@ -825,7 +898,9 @@ input#wish:focus { outline: none; border-color: var(--pink); }
   function render() {
     $("pick").hidden = !!S.me;
     $("main").hidden = !S.me;
-    for (const b of designsEl.children) b.setAttribute("aria-pressed", String(b.dataset.key === S.design));
+    const sp = cur();
+    for (const b of optButtons) b.setAttribute("aria-pressed", String(sp[b.dataset.field] === b.dataset.key));
+    if ($("kpreview").dataset.spec !== S.design) { $("kpreview").dataset.spec = S.design; $("kpreview").innerHTML = krathongSVG(S.design); }
     const status = {};
     for (const name of ["big", "kwan"]) {
       const mine = name === S.me;

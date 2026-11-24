@@ -150,7 +150,8 @@ h1 small { display: block; font-size: 14px; color: var(--ink-soft); font-family:
 .label { font-size: 13px; color: var(--ink-soft); }
 .who { flex: 1; min-width: 120px; padding: 12px; border-radius: 16px; border: 2px solid var(--pink-soft); background: #fff; font-family: var(--font-display); font-size: 20px; color: var(--ink); cursor: pointer; }
 .who:hover, .who:focus-visible { border-color: var(--pink); outline: none; }
-.designs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.designs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; }
+.design div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 11px; }
 .design { border: 2px solid transparent; background: #fff; border-radius: 14px; padding: 4px 2px 6px; cursor: pointer; font: inherit; font-size: 12px; color: var(--ink); }
 .design[aria-pressed="true"] { border-color: var(--pink); background: #fff0f6; }
 .design:focus-visible { outline: 2px solid var(--pink); outline-offset: 2px; }
@@ -248,9 +249,11 @@ input#wish:focus { outline: none; border-color: var(--pink); }
   const NAMES = { big: "บิ๊ก", kwan: "ขวัญ" };
   const OTHER = { big: "kwan", kwan: "big" };
   const DESIGNS = {
-    sakura: { label: "ซากุระชมพู", leaf: "#7fb069", leaf2: "#5d8f4c", p1: "#ffc4dc", p2: "#ff8fbf", fl: "#fff0f6", dot: "#ff5d9e" },
-    star:   { label: "ดาวฟ้าใส",  leaf: "#6fae95", leaf2: "#4f8a73", p1: "#cfe3ff", p2: "#8fb8ff", fl: "#fff6c2", dot: "#ffd54d" },
-    sun:    { label: "ทานตะวัน",  leaf: "#8bbd62", leaf2: "#6a9a48", p1: "#ffe9a8", p2: "#ffc94d", fl: "#ffb0c4", dot: "#ff7f7f" }
+    sakura: { label: "ซากุระ",   deco: "sakura", leaf: "#7fb069", leaf2: "#5d8f4c", p1: "#ffd3e4", p2: "#ff8fbf", fl: "#ffc4dc", dot: "#ff5d9e", base: "#a8d48a", base2: "#5f8a45" },
+    star:   { label: "ดาวฟ้า",   deco: "star",   leaf: "#6fae95", leaf2: "#4f8a73", p1: "#dcebff", p2: "#8fb8ff", fl: "#fff6c2", dot: "#ffd54d", base: "#9fd0c0", base2: "#4f8a73" },
+    sun:    { label: "ทานตะวัน", deco: "sun",    leaf: "#8bbd62", leaf2: "#6a9a48", p1: "#fff1c2", p2: "#ffc94d", fl: "#ffb0c4", dot: "#ff7f7f", base: "#b6d87e", base2: "#6a9a48" },
+    heart:  { label: "หัวใจ",    deco: "heart",  leaf: "#7fb069", leaf2: "#5d8f4c", p1: "#ffe0ea", p2: "#ff6f9c", fl: "#fff", dot: "#ff3d7f", base: "#ffc9d9", base2: "#d9819e" },
+    candy:  { label: "ลูกกวาด",  deco: "candy",  leaf: "#9ad0b0", leaf2: "#d7b4ff", p1: "#fff0f8", p2: "#c9a8ff", fl: "#fff", dot: "#ff9cc4", base: "#e8dcff", base2: "#a98ad6" }
   };
   const BUNNY = { big: { bow: "#6fb0ff", dress: "#b4d9ff" }, kwan: { bow: "#ff7fb0", dress: "#ffc8dd" } };
 
@@ -272,6 +275,66 @@ input#wish:focus { outline: none; border-color: var(--pink); }
 
   // ---------- SVG builders ----------
   function krathongSVG(key) {
+    const d = DESIGNS[key] || DESIGNS.sakura;
+    const n = (v) => v.toFixed(1);
+    const flower5 = (x, y, r, c, mid) => {
+      let s = "";
+      for (let k = 0; k < 5; k++) { const a = k / 5 * Math.PI * 2 - Math.PI / 2; s += `<circle cx="${n(x + Math.cos(a) * r)}" cy="${n(y + Math.sin(a) * r)}" r="${n(r * .85)}" fill="${c}"/>`; }
+      return s + `<circle cx="${x}" cy="${y}" r="${n(r * .6)}" fill="${mid}"/>`;
+    };
+    const star = (x, y, r, c) => {
+      let p = "";
+      for (let k = 0; k < 10; k++) { const a = k / 10 * Math.PI * 2 - Math.PI / 2, rr = k % 2 ? r * .45 : r; p += `${k ? "L" : "M"}${n(x + Math.cos(a) * rr)} ${n(y + Math.sin(a) * rr)}`; }
+      return `<path d="${p}Z" fill="${c}" stroke="#fff" stroke-width=".8" stroke-linejoin="round"/>`;
+    };
+    const heart = (x, y, r, c) => `<path d="M${x} ${n(y + r * .9)} C${n(x - r * 1.6)} ${n(y - r * .2)} ${n(x - r * .6)} ${n(y - r * 1.3)} ${x} ${n(y - r * .4)} C${n(x + r * .6)} ${n(y - r * 1.3)} ${n(x + r * 1.6)} ${n(y - r * .2)} ${x} ${n(y + r * .9)} Z" fill="${c}"/>`;
+    const sun = (x, y, r) => {
+      let s = "";
+      for (let k = 0; k < 10; k++) { const a = k / 10 * Math.PI * 2; s += `<ellipse cx="${n(x + Math.cos(a) * r)}" cy="${n(y + Math.sin(a) * r)}" rx="${n(r * .55)}" ry="${n(r * .3)}" transform="rotate(${n(a * 180 / Math.PI)} ${n(x + Math.cos(a) * r)} ${n(y + Math.sin(a) * r)})" fill="#ffcf3d"/>`; }
+      return s + `<circle cx="${x}" cy="${y}" r="${n(r * .7)}" fill="#8a5a2c"/><circle cx="${n(x - r * .2)}" cy="${n(y - r * .2)}" r="${n(r * .15)}" fill="#c48a4a"/>`;
+    };
+    const candy = (x, y, r, c) => `<line x1="${x}" y1="${y}" x2="${x}" y2="${n(y + r * 2.2)}" stroke="#fff" stroke-width="1.6"/><circle cx="${x}" cy="${y}" r="${r}" fill="${c}" stroke="#fff" stroke-width="1.2"/><path d="M${n(x - r * .5)} ${y} a${n(r * .5)} ${n(r * .5)} 0 1 1 ${n(r * .5)} ${n(r * .5)}" stroke="#fff" stroke-width="1.2" fill="none"/>`;
+    const deco = (x, y, r, i) => {
+      switch (d.deco) {
+        case "star": return star(x, y, r * 1.3, i % 2 ? "#ffe066" : "#fff6c2");
+        case "sun": return sun(x, y, r * .95);
+        case "heart": return heart(x, y, r * 1.1, i % 2 ? "#ff5d8f" : "#ff9cbc");
+        case "candy": return candy(x, y - 2, r * .95, ["#ff9cc4", "#9cd3ff", "#ffe08a", "#b8f0c8", "#d7b4ff"][i % 5]);
+        default: return flower5(x, y, r * .7, i % 2 ? d.fl : "#fff", d.dot);
+      }
+    };
+    let leaves = "";
+    for (let i = 0; i < 11; i++) {
+      const x = 8 + i * 10.4;
+      leaves += `<path d="M${n(x - 6)} 72 Q${n(x - 3)} 60 ${n(x)} ${56 - (i % 2) * 3} Q${n(x + 3)} 60 ${n(x + 6)} 72 Z" fill="${i % 2 ? d.leaf : d.leaf2}"/>`;
+    }
+    let petals = "";
+    for (let i = 0; i < 7; i++) { const x = 21 + i * 13; petals += `<path d="M${x - 8} 64 Q${x - 6} 44 ${x} 38 Q${x + 6} 44 ${x + 8} 64 Z" fill="${d.p1}" stroke="${d.p2}" stroke-width="1.2"/><path d="M${x} 44 L${x} 58" stroke="${d.p2}" stroke-width=".8" opacity=".6"/>`; }
+    let petals2 = "";
+    for (let i = 0; i < 5; i++) { const x = 34 + i * 13; petals2 += `<path d="M${x - 7} 62 Q${x - 5} 46 ${x} 41 Q${x + 5} 46 ${x + 7} 62 Z" fill="${d.p2}"/>`; }
+    let decos = "";
+    [[36, 54, 0], [84, 54, 1], [48, 62, 2], [72, 62, 3], [60, 64, 4]].forEach(([x, y, i]) => { decos += deco(x, y, 5.2, i); });
+    const sparkle = (x, y, s) => `<path d="M${x} ${y - s} L${x + s * .3} ${y - s * .3} L${x + s} ${y} L${x + s * .3} ${y + s * .3} L${x} ${y + s} L${x - s * .3} ${y + s * .3} L${x - s} ${y} L${x - s * .3} ${y - s * .3} Z" fill="#fff8d6"/>`;
+    return `<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <ellipse cx="60" cy="86" rx="54" ry="11" fill="${d.base2}"/>
+      <ellipse cx="60" cy="80" rx="54" ry="11" fill="${d.base}"/>
+      <path d="M8 80 Q60 96 112 80" stroke="#fff" stroke-width="1.6" fill="none" stroke-dasharray="2 4" opacity=".8"/>
+      ${leaves}${petals}${petals2}
+      <line x1="47" y1="56" x2="44" y2="26" stroke="#8a5a3c" stroke-width="1.4"/><line x1="51" y1="56" x2="50" y2="24" stroke="#8a5a3c" stroke-width="1.4"/>
+      <circle cx="44" cy="26" r="1.6" fill="#ff6a3d"/><circle cx="50" cy="24" r="1.6" fill="#ff6a3d"/>
+      <rect x="63" y="34" width="8" height="24" rx="3" fill="#fff6e0" stroke="#f0d8a8"/>
+      <path d="M63 40 Q67 43 71 40" stroke="${d.p2}" stroke-width="1.6" fill="none"/>
+      <g class="flame"><path d="M67 18 Q72.5 27 67 34 Q61.5 27 67 18 Z" fill="#ffcf5a"/><path d="M67 24 Q69.5 29 67 33 Q64.5 29 67 24 Z" fill="#fff4c4"/></g>
+      ${decos}
+      <ellipse cx="51" cy="82" rx="2.2" ry="2.8" fill="#3d2a38"/><ellipse cx="69" cy="82" rx="2.2" ry="2.8" fill="#3d2a38"/>
+      <circle cx="51.8" cy="81" r=".8" fill="#fff"/><circle cx="69.8" cy="81" r=".8" fill="#fff"/>
+      <ellipse cx="44" cy="86" rx="4" ry="2.2" fill="#ff9dbb" opacity=".75"/><ellipse cx="76" cy="86" rx="4" ry="2.2" fill="#ff9dbb" opacity=".75"/>
+      <path d="M57 86 Q60 89 63 86" stroke="#3d2a38" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      ${sparkle(20, 30, 4)}${sparkle(100, 36, 3.2)}${sparkle(90, 16, 2.4)}
+    </svg>`;
+  }
+
+  function krathongSVGOld(key) {
     const d = DESIGNS[key] || DESIGNS.sakura;
     let leaves = "", petals = "", petals2 = "";
     for (let i = 0; i < 9; i++) {
@@ -698,7 +761,9 @@ input#wish:focus { outline: none; border-color: var(--pink); }
     stars = Array.from({ length: Math.round(W * H / 6000) }, () => ({ x: Math.random() * W, y: Math.random() * H * .44, r: Math.random() * 1.4 + .3, p: Math.random() * 6 }));
     flies = Array.from({ length: 22 }, () => ({ x: Math.random() * W, y: H * (.5 + Math.random() * .4), p: Math.random() * 6, v: Math.random() * .4 + .2 }));
     shimmer = Array.from({ length: 140 }, () => ({ x: Math.random(), y: Math.random(), w: Math.random() * 30 + 10, p: Math.random() * 6 }));
+    riverDirty = true;
   }
+  var riverDirty = true;
   addEventListener("resize", resize);
   resize();
 
@@ -729,6 +794,165 @@ input#wish:focus { outline: none; border-color: var(--pink); }
       bgc.lineWidth = 1 + near;
       bgc.beginPath(); bgc.moveTo(x - s.w * (.4 + near) / 2, y); bgc.lineTo(x + s.w * (.4 + near) / 2, y); bgc.stroke();
     }
+    drawRiver(t, hz);
+  }
+
+  // ---------- river life ----------
+  var K_COLORS = [["#ffc4dc", "#ff8fbf"], ["#cfe3ff", "#8fb8ff"], ["#ffe9a8", "#ffc94d"], ["#e3d2ff", "#b597ff"], ["#c9f2dc", "#7fd6a6"]];
+  var riverK = [], pads = [], ripples = [], fishes = [], boat = null, nextFish = 0, waterBottom = 0;
+  function depthY(d) { const hz = H * .46; return hz + 8 + Math.pow(d, 1.5) * (waterBottom - hz - 8); }
+  function initRiver() {
+    const bank = document.getElementById("bank");
+    waterBottom = bank ? bank.getBoundingClientRect().top - sceneEl.getBoundingClientRect().top + 30 : H * .8;
+    const n = W < 600 ? 9 : 16;
+    riverK = Array.from({ length: n }, (_, i) => ({ x: Math.random() * W, d: .05 + Math.random() * .8, vx: (Math.random() < .5 ? -1 : 1) * (.05 + Math.random() * .12), seed: Math.random() * 10, c: K_COLORS[i % K_COLORS.length], nextRipple: 0 }));
+    const sides = W < 600 ? 4 : 8;
+    pads = Array.from({ length: sides }, (_, i) => {
+      const left = i % 2 === 0;
+      return { x: left ? Math.random() * W * .22 : W - Math.random() * W * .22, d: .35 + Math.random() * .6, rot: Math.random() * 6, flower: Math.random() < .6, seed: Math.random() * 10 };
+    });
+    boat = { x: -80, d: .22, dir: 1 };
+  }
+  function ripple(x, y, s, strong) { ripples.push({ x, y, s, t0: performance.now(), dur: strong ? 1800 : 2600, strong }); if (ripples.length > 40) ripples.shift(); }
+
+  function drawGlow(x, y, r, a) {
+    const g = bgc.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, `rgba(255,205,130,${a})`); g.addColorStop(1, "rgba(255,190,120,0)");
+    bgc.fillStyle = g; bgc.beginPath(); bgc.arc(x, y, r, 0, 7); bgc.fill();
+  }
+  function drawMiniK(k, t) {
+    const y = depthY(k.d) + Math.sin(t / 900 + k.seed) * 1.5 * (.4 + k.d);
+    const s = .28 + k.d * .75, x = k.x;
+    // reflection streak
+    bgc.fillStyle = `rgba(255,214,140,${.16 + .08 * Math.sin(t / 300 + k.seed)})`;
+    for (let j = 0; j < 4; j++) bgc.fillRect(x - (6 - j) * s + Math.sin(t / 250 + j + k.seed) * 2 * s, y + 4 * s + j * 5 * s, (12 - j * 2) * s, 2 * s);
+    drawGlow(x, y - 8 * s, 34 * s, .32);
+    bgc.fillStyle = "#4f6e3a"; bgc.beginPath(); bgc.ellipse(x, y + 2 * s, 15 * s, 4.5 * s, 0, 0, 7); bgc.fill();
+    bgc.fillStyle = "#9cc47a"; bgc.beginPath(); bgc.ellipse(x, y, 14 * s, 4 * s, 0, 0, 7); bgc.fill();
+    for (let i = -2; i <= 2; i++) {
+      bgc.fillStyle = i % 2 ? k.c[1] : k.c[0];
+      bgc.beginPath(); bgc.moveTo(x + i * 5 * s - 4 * s, y); bgc.quadraticCurveTo(x + i * 5 * s, y - 12 * s, x + i * 5 * s + 4 * s, y); bgc.fill();
+    }
+    bgc.fillStyle = "#fff6e0"; bgc.fillRect(x - 1.2 * s, y - 12 * s, 2.4 * s, 7 * s);
+    const f = 1 + .15 * Math.sin(t / 90 + k.seed * 7);
+    bgc.fillStyle = "#ffcf5a"; bgc.beginPath(); bgc.ellipse(x, y - 14.5 * s, 1.8 * s, 3.4 * s * f, 0, 0, 7); bgc.fill();
+  }
+  function drawPad(p, t) {
+    const y = depthY(p.d), s = .4 + p.d * .9;
+    bgc.save(); bgc.translate(p.x, y); bgc.scale(1, .38);
+    bgc.fillStyle = "#2f6b4a";
+    const a0 = p.rot + Math.sin(t / 2000 + p.seed) * .05;
+    bgc.beginPath(); bgc.moveTo(0, 0); bgc.arc(0, 0, 18 * s, a0 + .35, a0 + Math.PI * 2 - .1); bgc.closePath(); bgc.fill();
+    bgc.strokeStyle = "rgba(160,220,170,.35)"; bgc.lineWidth = 1.5; bgc.beginPath(); bgc.arc(0, 0, 13 * s, a0 + .5, a0 + 5); bgc.stroke();
+    bgc.restore();
+    if (p.flower) {
+      const fy = y - 3 * s;
+      drawGlow(p.x, fy - 4 * s, 16 * s, .12);
+      const petals = [[-7, "#ffb3cf"], [7, "#ffb3cf"], [-4, "#ff8fbf"], [4, "#ff8fbf"], [0, "#ffd3e4"]];
+      for (const [dx, c] of petals) {
+        bgc.fillStyle = c;
+        bgc.beginPath(); bgc.moveTo(p.x + dx * s - 3.5 * s, fy); bgc.quadraticCurveTo(p.x + dx * s * 1.1, fy - 13 * s, p.x + dx * s + 3.5 * s, fy); bgc.fill();
+      }
+      bgc.fillStyle = "#ffd77a"; bgc.beginPath(); bgc.arc(p.x, fy - 2 * s, 2 * s, 0, 7); bgc.fill();
+    }
+  }
+  function drawRipples(now) {
+    for (let i = ripples.length - 1; i >= 0; i--) {
+      const r = ripples[i], p = (now - r.t0) / r.dur;
+      if (p >= 1) { ripples.splice(i, 1); continue; }
+      for (let k = 0; k < (r.strong ? 3 : 2); k++) {
+        const pk = p - k * .15; if (pk <= 0) continue;
+        const rad = (6 + pk * 40) * r.s;
+        bgc.strokeStyle = `rgba(230,225,255,${(1 - pk) * (r.strong ? .55 : .3)})`; bgc.lineWidth = 1.2;
+        bgc.beginPath(); bgc.ellipse(r.x, r.y, rad, rad * .3, 0, 0, 7); bgc.stroke();
+      }
+    }
+  }
+  const drops = [];
+  function spawnFish(now) {
+    const d = .3 + Math.random() * .6, s = .5 + d;
+    const x = W * (.15 + Math.random() * .7), y = depthY(d);
+    const dir = Math.random() < .5 ? -1 : 1;
+    fishes.push({ x, y, s, dir, len: (40 + Math.random() * 30) * s, h: (34 + Math.random() * 24) * s, t0: now, dur: 1000 + Math.random() * 400, color: Math.random() < .5 ? "#ff9a5c" : "#ffd0e0", landed: false });
+    ripple(x, y, s, true);
+    splash(x, y, s);
+  }
+  function splash(x, y, s) {
+    for (let i = 0; i < 10; i++) drops.push({ x, y, vx: (Math.random() - .5) * 2.4 * s, vy: -(1.5 + Math.random() * 2.2) * s, life: 0, max: 40 });
+  }
+  function drawFish(now) {
+    for (let i = fishes.length - 1; i >= 0; i--) {
+      const f = fishes[i], p = (now - f.t0) / f.dur;
+      if (p >= 1) {
+        if (!f.landed) { f.landed = true; const ex = f.x + f.dir * f.len; ripple(ex, f.y, f.s, true); splash(ex, f.y, f.s); }
+        fishes.splice(i, 1); continue;
+      }
+      const x = f.x + f.dir * f.len * p, y = f.y - Math.sin(Math.PI * p) * f.h;
+      const ang = Math.atan2(-Math.cos(Math.PI * p) * f.h * Math.PI, f.dir * f.len);
+      bgc.save(); bgc.translate(x, y); bgc.rotate(f.dir > 0 ? ang : ang + Math.PI); bgc.scale(f.dir > 0 ? 1 : 1, f.dir > 0 ? 1 : -1);
+      const s = f.s;
+      bgc.fillStyle = f.color;
+      bgc.beginPath(); bgc.ellipse(0, 0, 9 * s, 3.6 * s, 0, 0, 7); bgc.fill();
+      bgc.beginPath(); bgc.moveTo(-7 * s, 0); bgc.lineTo(-14 * s, -4.5 * s); bgc.lineTo(-14 * s, 4.5 * s); bgc.closePath(); bgc.fill();
+      bgc.fillStyle = "#fff"; bgc.beginPath(); bgc.arc(2 * s, -1 * s, 1.6 * s, 0, 7); bgc.fill();
+      bgc.fillStyle = "#3d2a38"; bgc.beginPath(); bgc.arc(6 * s, -.8 * s, .9 * s, 0, 7); bgc.fill();
+      bgc.restore();
+    }
+    for (let i = drops.length - 1; i >= 0; i--) {
+      const d = drops[i]; d.life++; d.x += d.vx; d.y += d.vy; d.vy += .12;
+      if (d.life > d.max) { drops.splice(i, 1); continue; }
+      bgc.fillStyle = `rgba(220,235,255,${1 - d.life / d.max})`;
+      bgc.beginPath(); bgc.arc(d.x, d.y, 1.4, 0, 7); bgc.fill();
+    }
+  }
+  function drawBoat(t) {
+    if (!boat) return;
+    boat.x += .25 * boat.dir;
+    if (boat.x > W + 90) { boat.dir = -1; boat.d = .15 + Math.random() * .2; }
+    if (boat.x < -90) { boat.dir = 1; boat.d = .15 + Math.random() * .2; }
+    const y = depthY(boat.d) + Math.sin(t / 800) * 1.2, s = .55 + boat.d * .9, x = boat.x;
+    bgc.fillStyle = "rgba(255,190,110,.18)";
+    for (let j = 0; j < 4; j++) bgc.fillRect(x + 10 * s - 3 * s + Math.sin(t / 260 + j) * 2, y + 6 * s + j * 5 * s, 6 * s, 2 * s);
+    bgc.fillStyle = "#3b2619";
+    bgc.beginPath(); bgc.moveTo(x - 34 * s, y - 6 * s); bgc.quadraticCurveTo(x, y + 8 * s, x + 34 * s, y - 6 * s); bgc.lineTo(x + 26 * s, y + 2 * s); bgc.quadraticCurveTo(x, y + 6 * s, x - 26 * s, y + 2 * s); bgc.closePath(); bgc.fill();
+    bgc.fillStyle = "#6b4a33"; bgc.fillRect(x - 28 * s, y - 7 * s, 56 * s, 2 * s);
+    bgc.strokeStyle = "#3b2619"; bgc.lineWidth = 1.5 * s;
+    bgc.beginPath(); bgc.moveTo(x + 10 * s, y - 6 * s); bgc.lineTo(x + 10 * s, y - 30 * s); bgc.stroke();
+    drawGlow(x + 10 * s, y - 26 * s, 26 * s, .45);
+    bgc.fillStyle = "#e8473f"; bgc.beginPath(); bgc.ellipse(x + 10 * s, y - 25 * s, 4 * s, 5.5 * s, 0, 0, 7); bgc.fill();
+    for (let i = -2; i <= 0; i++) { bgc.fillStyle = K_COLORS[(i + 3) % 5][1]; bgc.beginPath(); bgc.arc(x + i * 8 * s - 4 * s, y - 9 * s, 3 * s, 0, 7); bgc.fill(); }
+  }
+  function drawLightReflections(t, hz) {
+    const r = Math.min(80, Math.max(34, W * .07)), cx = Math.max(r + 8, W * .1);
+    const spots = [[cx, r * .9], [W * .86, 40]];
+    for (const [sx, spread] of spots) {
+      for (let j = 0; j < 9; j++) {
+        const y = hz + 6 + j * 7;
+        const w = spread * (.5 + Math.random() * .3) * (1 - j / 12);
+        bgc.fillStyle = BULB[(j + Math.floor(t / 500)) % BULB.length];
+        bgc.globalAlpha = .18 * (1 - j / 10);
+        bgc.fillRect(sx - w / 2 + Math.sin(t / 300 + j) * 4, y, w, 2);
+      }
+    }
+    bgc.globalAlpha = 1;
+  }
+  function drawRiver(t, hz) {
+    const now = performance.now();
+    if (riverDirty) { riverDirty = false; initRiver(); }
+    drawLightReflections(t, hz);
+    const items = [];
+    for (const k of riverK) {
+      k.x += k.vx * (.4 + k.d);
+      if (k.x < -30) k.x = W + 30; if (k.x > W + 30) k.x = -30;
+      if (now > k.nextRipple) { k.nextRipple = now + 3000 + Math.random() * 4000; ripple(k.x, depthY(k.d) + 2, .3 + k.d * .6, false); }
+      items.push({ d: k.d, draw: () => drawMiniK(k, t) });
+    }
+    for (const p of pads) items.push({ d: p.d, draw: () => drawPad(p, t) });
+    items.push({ d: boat ? boat.d : 0, draw: () => drawBoat(t) });
+    drawRipples(now);
+    items.sort((a, b) => a.d - b.d).forEach((it) => it.draw());
+    if (now > nextFish && t > 0) { nextFish = now + 3500 + Math.random() * 5000; spawnFish(now); }
+    drawFish(now);
   }
 
   const BULB = ["#ff8fbf", "#ffd77a", "#9cc9ff", "#9ff0c8", "#ffb07a", "#d7b4ff"];

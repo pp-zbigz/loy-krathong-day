@@ -104,6 +104,25 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events
 #stallL { left: max(8px, env(safe-area-inset-left, 0px)); }
 #stallR { right: max(8px, env(safe-area-inset-right, 0px)); bottom: 70px; }
 @media (max-width: 640px) { .stall { display: none; } }
+#ppl { position: absolute; inset: 0; pointer-events: none; }
+.person { position: absolute; width: var(--w); }
+.person svg { display: block; width: 100%; height: auto; overflow: visible; }
+.p-kr { left: 18%; bottom: 58%; --w: clamp(40px, 6vw, 62px); }
+.p-spark { left: 24%; bottom: 40%; --w: clamp(36px, 5.4vw, 54px); }
+.p-couple { right: 17%; bottom: 40%; --w: clamp(70px, 10vw, 110px); }
+.p-lan { right: 26%; bottom: 60%; --w: clamp(40px, 6vw, 60px); }
+.p-sway { animation: psway 4s ease-in-out infinite; transform-origin: 50% 100%; }
+@keyframes psway { 0%, 100% { transform: rotate(-1.5deg); } 50% { transform: rotate(1.5deg); } }
+.spk { transform-box: fill-box; transform-origin: center; animation: spk .22s steps(2) infinite; }
+@keyframes spk { from { transform: rotate(0deg) scale(1); } to { transform: rotate(45deg) scale(1.25); } }
+.spk-glow { animation: lampglow .3s ease-in-out infinite alternate; }
+.lovebeat { animation: love 3s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes love { 0% { transform: translateY(4px) scale(.6); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateY(-14px) scale(1); opacity: 0; } }
+@media (max-width: 640px) {
+  .p-kr, .p-lan { display: none; }
+  .p-spark { left: 4%; bottom: 40%; }
+  .p-couple { right: 2%; bottom: 44%; }
+}
 .lamp { animation: lampglow 1.8s ease-in-out infinite alternate; }
 @keyframes lampglow { from { opacity: .75; } to { opacity: 1; } }
 #temple { position: absolute; left: 50%; bottom: 54%; width: min(520px, 70%); transform: translateX(-50%); pointer-events: none; }
@@ -206,6 +225,7 @@ input#wish:focus { outline: none; border-color: var(--pink); }
   <div id="floats"></div>
   <div id="bank">
     <div id="pier"></div>
+    <div id="ppl"></div>
     <div class="stall" id="stallL"></div>
     <div class="stall" id="stallR"></div>
     <div id="bunnies">
@@ -487,6 +507,81 @@ input#wish:focus { outline: none; border-color: var(--pink); }
   $("temple").innerHTML = templeSVG(true);
   $("temple-ref").innerHTML = templeSVG(false);
   $("pier").innerHTML = pierSVG();
+  $("ppl").innerHTML = peopleHTML();
+
+  // people seen from behind, watching the river
+  function peopleHTML() {
+    const skin = "#f2c9a5", hairD = "#2e2226", hairB = "#5a3a2a";
+    const glow = (x, y, r, c, a) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${c}" opacity="${a}"/>`;
+    const sparkler = `<g>
+        ${glow(44, 8, 12, "#ffe9a8", .35).replace("<circle", '<circle class="spk-glow"')}
+        <line x1="36" y1="34" x2="44" y2="8" stroke="#9a9aa8" stroke-width="1.4"/>
+        <path class="spk" d="M44 0 L46 6 L52 8 L46 10 L44 16 L42 10 L36 8 L42 6 Z" fill="#fff6c8"/>
+        <circle cx="44" cy="8" r="2.2" fill="#fff"/>
+      </g>`;
+    const kid = `<svg viewBox="0 0 50 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <ellipse cx="25" cy="98" rx="14" ry="2.5" fill="rgba(0,0,0,.25)"/>
+        <rect x="17" y="74" width="6" height="22" rx="3" fill="#3d3550"/><rect x="27" y="74" width="6" height="22" rx="3" fill="#3d3550"/>
+        <path d="M14 48 Q25 42 36 48 L38 78 L12 78 Z" fill="#ffcf5a"/>
+        <path d="M33 52 Q37 44 37 34" stroke="${skin}" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <path d="M16 54 Q12 64 15 72" stroke="${skin}" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <circle cx="25" cy="36" r="12" fill="${hairD}"/>
+        <path d="M14 34 Q25 22 36 34" fill="${hairD}"/>
+        <ellipse cx="13.5" cy="38" rx="2" ry="3" fill="${skin}"/><ellipse cx="36.5" cy="38" rx="2" ry="3" fill="${skin}"/>
+        ${sparkler}
+      </svg>`;
+    const woman = `<svg viewBox="0 0 56 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <ellipse cx="28" cy="108" rx="17" ry="2.5" fill="rgba(0,0,0,.25)"/>
+        ${glow(46, 66, 16, "#ffd68a", .35)}
+        <path d="M15 50 Q28 44 41 50 L44 106 L12 106 Z" fill="#c9708f"/>
+        <path d="M15 50 L41 50 L41 60 L15 72 Z" fill="#ffd3e4"/><path d="M15 72 L41 60" stroke="#ffd77a" stroke-width="2"/>
+        <path d="M14 82 L42 82" stroke="#ffd77a" stroke-width="2"/>
+        <path d="M40 56 Q48 60 46 66" stroke="${skin}" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <path d="M16 56 Q8 60 10 66" stroke="${skin}" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <ellipse cx="46" cy="68" rx="9" ry="3" fill="#8cc08a"/><path d="M39 67 Q46 56 53 67 Z" fill="#ffb6cf"/>
+        <line x1="46" y1="60" x2="46" y2="55" stroke="#fff6e0" stroke-width="1.6"/><ellipse class="flame" cx="46" cy="53" rx="1.4" ry="2.4" fill="#ffcf5a"/>
+        <ellipse cx="2" cy="68" rx="0" ry="0"/>
+        <circle cx="28" cy="36" r="13" fill="${hairD}"/>
+        <circle cx="28" cy="22" r="7" fill="${hairD}"/>
+        <circle cx="34" cy="20" r="2.4" fill="#fff"/><circle cx="31" cy="18" r="2" fill="#ffb6cf"/>
+        <path d="M18 44 Q28 50 38 44 L36 50 Q28 52 20 50 Z" fill="${skin}"/>
+      </svg>`;
+    const couple = `<svg viewBox="0 0 90 72" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <ellipse cx="45" cy="69" rx="40" ry="3" fill="rgba(0,0,0,.25)"/>
+        <text class="lovebeat" x="45" y="10" text-anchor="middle" font-size="12" fill="#ff8fbf">♥</text>
+        <path d="M8 68 Q8 40 26 36 Q42 40 44 68 Z" fill="#5b6fb8"/>
+        <circle cx="26" cy="26" r="12" fill="${hairD}"/>
+        <path d="M15 22 Q26 12 37 22" fill="${hairD}"/>
+        <ellipse cx="14.5" cy="28" rx="2" ry="3" fill="${skin}"/>
+        <path d="M46 68 Q46 42 62 38 Q80 42 82 68 Z" fill="#ff9cbc"/>
+        <path d="M50 46 Q62 52 76 46" stroke="#ffd77a" stroke-width="2" fill="none"/>
+        <circle cx="63" cy="28" r="11.5" fill="${hairB}"/>
+        <path d="M52 30 Q50 46 56 50 L70 50 Q76 46 74 30 Z" fill="${hairB}"/>
+        <circle cx="70" cy="20" r="2.6" fill="#fff"/><circle cx="67" cy="18" r="2" fill="#ffd77a"/>
+        <path d="M40 52 Q46 48 52 52" stroke="${skin}" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+      </svg>`;
+    const lanternMan = `<svg viewBox="0 0 56 112" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <ellipse cx="26" cy="110" rx="16" ry="2.5" fill="rgba(0,0,0,.25)"/>
+        <rect x="16" y="80" width="8" height="28" rx="3" fill="#2f3b55"/><rect x="28" y="80" width="8" height="28" rx="3" fill="#2f3b55"/>
+        <path d="M11 50 Q26 43 41 50 L42 84 L10 84 Z" fill="#7fb8a8"/>
+        <path d="M26 46 L26 84" stroke="#e8f4ef" stroke-width="1.2" opacity=".6"/>
+        <path d="M39 56 Q46 46 46 32" stroke="${skin}" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <line x1="46" y1="34" x2="46" y2="10" stroke="#5a3b2a" stroke-width="1.6"/>
+        <line x1="46" y1="10" x2="50" y2="14" stroke="#5a3b2a" stroke-width="1"/>
+        ${glow(50, 22, 16, "#ffb07a", .4).replace("<circle", '<circle class="lamp"')}
+        <ellipse cx="50" cy="22" rx="7" ry="8" fill="#e8473f"/>
+        <rect x="46" y="13" width="8" height="2" fill="#ffd77a"/><rect x="46" y="29" width="8" height="2" fill="#ffd77a"/>
+        <path d="M13 56 Q8 66 11 74" stroke="${skin}" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <circle cx="26" cy="34" r="12.5" fill="${hairD}"/>
+        <path d="M14 30 Q26 18 38 30" fill="${hairD}"/>
+        <ellipse cx="13.5" cy="36" rx="2" ry="3" fill="${skin}"/><ellipse cx="38.5" cy="36" rx="2" ry="3" fill="${skin}"/>
+        <path d="M18 44 Q26 48 34 44 L33 48 Q26 50 19 48 Z" fill="${skin}"/>
+      </svg>`;
+    return `<div class="person p-kr"><div class="p-sway">${woman}</div></div>
+      <div class="person p-spark"><div class="p-sway" style="animation-duration:3s">${kid}</div></div>
+      <div class="person p-couple">${couple}</div>
+      <div class="person p-lan"><div class="p-sway" style="animation-duration:5s">${lanternMan}</div></div>`;
+  }
   $("stallL").innerHTML = stallSVG("ขนมครก", "#e0485a", ["#ffd77a", "#fff3d6", "#ffd77a"]);
   $("stallR").innerHTML = stallSVG("สายไหม", "#4f8fd8", ["#ffc4dc", "#cfe3ff", "#ffc4dc"]);
 

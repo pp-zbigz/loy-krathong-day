@@ -97,9 +97,18 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events
 .bunny.custom.editable .hand.dragging { cursor: grabbing; transition: none; }
 .swap { position: absolute; top: 0; right: -6px; border: 0; border-radius: 999px; background: rgba(255, 246, 251, .92); color: var(--ink); font: inherit; font-size: 12px; padding: 3px 8px; cursor: pointer; z-index: 2; }
 .swap:focus-visible { outline: 2px solid var(--pink); }
-#temple { position: absolute; left: 50%; bottom: 54%; width: min(620px, 92%); transform: translateX(-50%); pointer-events: none; }
+#pier { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); width: clamp(260px, 62vw, 480px); height: calc(100% + 46px); pointer-events: none; }
+#pier svg { display: block; width: 100%; height: 100%; }
+.stall { position: absolute; bottom: 18px; width: clamp(110px, 17vw, 170px); pointer-events: none; }
+.stall svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 0 10px rgba(255, 190, 110, .35)); }
+#stallL { left: max(8px, env(safe-area-inset-left, 0px)); }
+#stallR { right: max(8px, env(safe-area-inset-right, 0px)); bottom: 70px; }
+@media (max-width: 640px) { .stall { display: none; } }
+.lamp { animation: lampglow 1.8s ease-in-out infinite alternate; }
+@keyframes lampglow { from { opacity: .75; } to { opacity: 1; } }
+#temple { position: absolute; left: 50%; bottom: 54%; width: min(520px, 70%); transform: translateX(-50%); pointer-events: none; }
 #temple svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 0 14px rgba(255, 196, 110, .45)); }
-#temple-ref { position: absolute; left: 50%; top: 46.2%; width: min(620px, 92%); transform: translateX(-50%) scaleY(-.55); transform-origin: 50% 0; opacity: .32; filter: blur(2px); pointer-events: none; -webkit-mask-image: linear-gradient(to top, #000, transparent 85%); mask-image: linear-gradient(to top, #000, transparent 85%); }
+#temple-ref { position: absolute; left: 50%; top: 46.2%; width: min(520px, 70%); transform: translateX(-50%) scaleY(-.55); transform-origin: 50% 0; opacity: .32; filter: blur(2px); pointer-events: none; -webkit-mask-image: linear-gradient(to top, #000, transparent 85%); mask-image: linear-gradient(to top, #000, transparent 85%); }
 #temple-ref svg { display: block; width: 100%; height: auto; }
 .tl { animation: tw 2.4s ease-in-out infinite alternate; }
 @keyframes tw { from { opacity: .35; } to { opacity: 1; } }
@@ -191,6 +200,9 @@ input#wish:focus { outline: none; border-color: var(--pink); }
   <div id="lanterns"></div>
   <div id="floats"></div>
   <div id="bank">
+    <div id="pier"></div>
+    <div class="stall" id="stallL"></div>
+    <div class="stall" id="stallR"></div>
     <div id="bunnies">
       <div class="bunny" id="b-big"><div class="body"></div><div class="tag"><span class="dot"></span>บิ๊ก</div></div>
       <div class="bunny" id="b-kwan"><div class="body"></div><div class="tag"><span class="dot"></span>ขวัญ</div></div>
@@ -407,6 +419,52 @@ input#wish:focus { outline: none; border-color: var(--pink); }
   }
   $("temple").innerHTML = templeSVG(true);
   $("temple-ref").innerHTML = templeSVG(false);
+  $("pier").innerHTML = pierSVG();
+  $("stallL").innerHTML = stallSVG("ขนมครก", "#e0485a", ["#ffd77a", "#fff3d6", "#ffd77a"]);
+  $("stallR").innerHTML = stallSVG("สายไหม", "#4f8fd8", ["#ffc4dc", "#cfe3ff", "#ffc4dc"]);
+
+  function pierSVG() {
+    let planks = "";
+    for (let i = 1; i < 14; i++) {
+      const y = 46 + i * 15;
+      const inset = 70 * (1 - (y - 46) / 214);
+      planks += `<line x1="${inset.toFixed(1)}" y1="${y}" x2="${(400 - inset).toFixed(1)}" y2="${y}" stroke="#6b4a33" stroke-width="1.6" opacity=".7"/>`;
+    }
+    const lamp = (x, y, h) => `
+      <line x1="${x}" y1="${y}" x2="${x}" y2="${y - h}" stroke="#4a3024" stroke-width="4"/>
+      <path d="M${x} ${y - h} q14 0 16 10" stroke="#4a3024" stroke-width="3" fill="none"/>
+      <circle class="lamp" cx="${x + 16}" cy="${y - h + 22}" r="18" fill="rgba(255,190,110,.25)"/>
+      <rect class="lamp" x="${x + 9}" y="${y - h + 12}" width="14" height="19" rx="6" fill="#e8473f"/>
+      <rect x="${x + 11}" y="${y - h + 10}" width="10" height="3" fill="#ffd77a"/><rect x="${x + 11}" y="${y - h + 30}" width="10" height="3" fill="#ffd77a"/>`;
+    return `<svg viewBox="0 0 400 260" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect x="74" y="46" width="8" height="34" fill="#3b2619"/><rect x="318" y="46" width="8" height="34" fill="#3b2619"/>
+      <path d="M70 46 L330 46 L400 260 L0 260 Z" fill="#a87a52"/>
+      <path d="M70 46 L330 46 L334 54 L66 54 Z" fill="#c69467"/>
+      ${planks}
+      <path d="M70 46 L0 260" stroke="#7a5236" stroke-width="5"/><path d="M330 46 L400 260" stroke="#7a5236" stroke-width="5"/>
+      ${lamp(64, 70, 58)}${lamp(306, 70, 58)}
+    </svg>`;
+  }
+
+  function stallSVG(label, roof, goods) {
+    let stripes = "";
+    for (let i = 0; i < 8; i++) stripes += `<path d="M${10 + i * 20} 40 L${30 + i * 20} 40 L${30 + i * 20} 58 Q${20 + i * 20} 66 ${10 + i * 20} 58 Z" fill="${i % 2 ? "#fff6ea" : roof}"/>`;
+    let bulbs = "";
+    for (let i = 0; i < 9; i++) bulbs += `<circle class="tl" style="animation-delay:${(i * .3) % 2.4}s" cx="${12 + i * 19}" cy="${38 + Math.sin(i / 8 * Math.PI) * 6}" r="3" fill="${["#ffd77a", "#ff8fbf", "#9cc9ff"][i % 3]}"/>`;
+    const items = goods.map((c, i) => `<circle cx="${50 + i * 30}" cy="102" r="10" fill="${c}"/>`).join("");
+    return `<svg viewBox="0 0 180 150" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect x="18" y="58" width="6" height="88" fill="#5a3b2a"/><rect x="156" y="58" width="6" height="88" fill="#5a3b2a"/>
+      <rect x="22" y="66" width="136" height="44" fill="rgba(255,214,140,.35)"/>
+      <path d="M10 40 L170 40 L160 18 L20 18 Z" fill="${roof}"/>
+      ${stripes}
+      <path d="M10 38 Q90 50 170 38" stroke="#3a2a2a" stroke-width="1" fill="none"/>
+      ${bulbs}
+      ${items}
+      <rect x="14" y="110" width="152" height="36" rx="4" fill="#8a5a3c"/>
+      <rect x="40" y="118" width="100" height="20" rx="10" fill="#fff6ea"/>
+      <text x="90" y="133" text-anchor="middle" font-family="Itim, Mali, sans-serif" font-size="15" fill="#4a2f45">${label}</text>
+    </svg>`;
+  }
   const handDesign = { big: "star", kwan: "sakura" };
   function setHand(who, design) {
     if (handDesign[who] === design && handEl[who].innerHTML) return;
@@ -429,14 +487,16 @@ input#wish:focus { outline: none; border-color: var(--pink); }
   $("pick-big").onclick = () => choose("big");
   $("pick-kwan").onclick = () => choose("kwan");
   $("switch").onclick = () => { S.me = null; S.ready = false; push(); render(); };
-  $("toggle").onclick = () => {
-    const p = $("panel"); p.classList.toggle("min");
-    $("toggle").textContent = p.classList.contains("min") ? "เปิด" : "ซ่อน";
-  };
+  function setPanelMin(on) {
+    $("panel").classList.toggle("min", on);
+    $("toggle").textContent = on ? "เปิด" : "ซ่อน";
+  }
+  $("toggle").onclick = () => setPanelMin(!$("panel").classList.contains("min"));
   $("go").onclick = () => {
     if (!S.me || S.counting) return;
     const partner = partnerPeer();
-    if (!room || !partner) { soloLaunch(); return; }
+    if (!room || !partner) { setPanelMin(true); soloLaunch(); return; }
+    if (!S.ready) setPanelMin(true);
     S.ready = !S.ready; push(); render(); checkSync();
   };
   $("solo").onclick = () => { if (S.me && !S.counting) soloLaunch(); };
@@ -501,6 +561,7 @@ input#wish:focus { outline: none; border-color: var(--pink); }
   }
   function startCountdown(partner) {
     S.counting = true;
+    setPanelMin(true);
     partnerFloatsAtStart = safeInt(partner.presence.floats);
     const partnerDesign = safeDesign(partner.presence.design) || handDesign[OTHER[S.me]];
     render();
@@ -585,7 +646,7 @@ input#wish:focus { outline: none; border-color: var(--pink); }
     const sr = sceneEl.getBoundingClientRect();
     const hr = hand.getBoundingClientRect();
     const r = { left: hr.left - sr.left, top: hr.top - sr.top, width: hr.width, height: hr.height };
-    const bankTop = $("bank").getBoundingClientRect().top - sr.top;
+    const bankTop = Math.min($("bank").getBoundingClientRect().top, $("pier").getBoundingClientRect().top) - sr.top;
     const el = document.createElement("div");
     el.className = "floater";
     el.style.setProperty("--kw", r.width + "px");
@@ -655,6 +716,7 @@ input#wish:focus { outline: none; border-color: var(--pink); }
     bgc.beginPath(); bgc.moveTo(0, hz);
     for (let x = 0; x <= W; x += 20) bgc.lineTo(x, hz - 8 - Math.sin(x / 70) * 5 - Math.sin(x / 23) * 2);
     bgc.lineTo(W, hz); bgc.closePath(); bgc.fill();
+    drawFair(t, hz);
     // moon reflection + water shimmer
     const mx = W * .78;
     for (const s of shimmer) {
@@ -666,6 +728,88 @@ input#wish:focus { outline: none; border-color: var(--pink); }
       bgc.strokeStyle = nearMoon ? `rgba(255,240,200,${a})` : `rgba(200,190,255,${a})`;
       bgc.lineWidth = 1 + near;
       bgc.beginPath(); bgc.moveTo(x - s.w * (.4 + near) / 2, y); bgc.lineTo(x + s.w * (.4 + near) / 2, y); bgc.stroke();
+    }
+  }
+
+  const BULB = ["#ff8fbf", "#ffd77a", "#9cc9ff", "#9ff0c8", "#ffb07a", "#d7b4ff"];
+  function curve(x0, y0, x1, y1, sag, u) {
+    return [x0 + (x1 - x0) * u, y0 + (y1 - y0) * u + Math.sin(Math.PI * u) * sag];
+  }
+  function drawFair(t, hz) {
+    // string lights across the sky
+    const strings = [[0, H * .06, W, H * .03, H * .07], [0, H * .2, W * .5, H * .14, H * .05], [W * .5, H * .14, W, H * .22, H * .05]];
+    for (const [x0, y0, x1, y1, sag] of strings) {
+      bgc.strokeStyle = "rgba(40,24,60,.8)"; bgc.lineWidth = 1.2;
+      bgc.beginPath();
+      for (let u = 0; u <= 1.001; u += .02) { const [x, y] = curve(x0, y0, x1, y1, sag, u); u === 0 ? bgc.moveTo(x, y) : bgc.lineTo(x, y); }
+      bgc.stroke();
+      const n = Math.max(6, Math.round(Math.hypot(x1 - x0, y1 - y0) / 30));
+      for (let i = 0; i <= n; i++) {
+        const [x, y] = curve(x0, y0, x1, y1, sag, i / n);
+        const a = .55 + .45 * Math.abs(Math.sin(t / 500 + i * 1.7));
+        bgc.globalAlpha = a; bgc.fillStyle = BULB[i % BULB.length];
+        bgc.shadowColor = BULB[i % BULB.length]; bgc.shadowBlur = 10;
+        bgc.beginPath(); bgc.arc(x, y + 4, 3.2, 0, 7); bgc.fill();
+      }
+      bgc.shadowBlur = 0; bgc.globalAlpha = 1;
+    }
+    // bunting flags
+    const fx0 = 0, fy0 = H * .1, fx1 = W, fy1 = H * .12, fsag = H * .06;
+    const fn = Math.max(8, Math.round(W / 34));
+    bgc.strokeStyle = "rgba(255,240,220,.5)"; bgc.lineWidth = 1;
+    bgc.beginPath();
+    for (let u = 0; u <= 1.001; u += .02) { const [x, y] = curve(fx0, fy0, fx1, fy1, fsag, u); u === 0 ? bgc.moveTo(x, y) : bgc.lineTo(x, y); }
+    bgc.stroke();
+    for (let i = 0; i < fn; i++) {
+      const [ax, ay] = curve(fx0, fy0, fx1, fy1, fsag, i / fn);
+      const [bx, by] = curve(fx0, fy0, fx1, fy1, fsag, (i + .8) / fn);
+      const sway = Math.sin(t / 700 + i) * 2;
+      bgc.fillStyle = ["#ff7fb0", "#ffd77a", "#7fb8ff", "#9ff0c8"][i % 4];
+      bgc.globalAlpha = .85;
+      bgc.beginPath(); bgc.moveTo(ax, ay); bgc.lineTo(bx, by); bgc.lineTo((ax + bx) / 2 + sway, (ay + by) / 2 + 16); bgc.closePath(); bgc.fill();
+    }
+    bgc.globalAlpha = 1;
+    // Ferris wheel on the far bank
+    const r = Math.min(80, Math.max(34, W * .07));
+    const cx = Math.max(r + 8, W * .1), cy = hz - r - 14;
+    bgc.strokeStyle = "#5a3f7a"; bgc.lineWidth = 3;
+    bgc.beginPath(); bgc.moveTo(cx - r * .55, hz); bgc.lineTo(cx, cy); bgc.lineTo(cx + r * .55, hz); bgc.stroke();
+    const rot = t / 6000;
+    bgc.lineWidth = 1.2; bgc.strokeStyle = "rgba(255,220,170,.55)";
+    for (let i = 0; i < 12; i++) {
+      const a = rot + i * Math.PI / 6;
+      bgc.beginPath(); bgc.moveTo(cx, cy); bgc.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r); bgc.stroke();
+    }
+    bgc.lineWidth = 2; bgc.strokeStyle = "rgba(255,200,230,.7)";
+    bgc.beginPath(); bgc.arc(cx, cy, r, 0, 7); bgc.stroke();
+    for (let i = 0; i < 24; i++) {
+      const a = rot + i * Math.PI / 12;
+      bgc.fillStyle = BULB[(i + Math.floor(t / 400)) % BULB.length];
+      bgc.shadowColor = bgc.fillStyle; bgc.shadowBlur = 8;
+      bgc.beginPath(); bgc.arc(cx + Math.cos(a) * r, cy + Math.sin(a) * r, 2.2, 0, 7); bgc.fill();
+    }
+    bgc.shadowBlur = 0;
+    for (let i = 0; i < 8; i++) {
+      const a = rot + i * Math.PI / 4;
+      const gx = cx + Math.cos(a) * r, gy = cy + Math.sin(a) * r;
+      bgc.fillStyle = BULB[i % BULB.length];
+      bgc.fillRect(gx - r * .08, gy + 2, r * .16, r * .12);
+    }
+    bgc.fillStyle = "#ffd77a"; bgc.beginPath(); bgc.arc(cx, cy, 3.5, 0, 7); bgc.fill();
+    // far-bank market stalls with lights
+    const sx0 = W * .8;
+    for (let k = 0; k < 3; k++) {
+      const sw = Math.min(46, W * .05), x = sx0 + k * (sw + 6), y = hz - 18;
+      if (x + sw > W) break;
+      bgc.fillStyle = "rgba(255,206,140,.35)"; bgc.fillRect(x, y, sw, 16);
+      bgc.fillStyle = ["#e0485a", "#4f8fd8", "#e8a43a"][k];
+      bgc.beginPath(); bgc.moveTo(x - 3, y); bgc.lineTo(x + sw / 2, y - 12); bgc.lineTo(x + sw + 3, y); bgc.closePath(); bgc.fill();
+      for (let b = 0; b <= 4; b++) {
+        bgc.fillStyle = BULB[(b + k) % BULB.length];
+        bgc.globalAlpha = .6 + .4 * Math.abs(Math.sin(t / 450 + b + k));
+        bgc.beginPath(); bgc.arc(x + b * sw / 4, y + 1, 1.8, 0, 7); bgc.fill();
+      }
+      bgc.globalAlpha = 1;
     }
   }
 
